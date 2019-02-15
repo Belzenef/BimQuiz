@@ -38,6 +38,7 @@ class Client:
             line=input(">")
             if line == "quit" : 
                 print("Ending connection")
+                sock.sendall(line.encode('ascii'))
                 connected=False
             else :
                 line+="\x00"
