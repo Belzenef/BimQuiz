@@ -36,12 +36,12 @@ class Client:
         print("To quit server, enter 'quit' ")
         while connected :
             line=input(">")
-            if line == "quit" : 
+            line+="\x00"
+            if line == "quit\x00" : 
                 print("Ending connection")
                 sock.sendall(line.encode('ascii'))
                 connected=False
             else :
-                line+="\x00"
                 line=line.encode('ascii')
                 sock.sendall(line)
                 response = sock.recv(1024)
