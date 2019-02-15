@@ -24,9 +24,16 @@ class Client:
         name = ch
         sock = socket(AF_INET, SOCK_STREAM)
         sock.connect(('127.0.0.1',8888))
-        print("Welcome, %s ! :)" % name)
-        print("To quit server, enter 'quit' ")
+        sock.sendall(name.encode('ascii'))
+        response = sock.recv(1024)
         connected=True
+        if not response : 
+            print("Server has been deconnected")
+            connected=False
+        else : 
+            response=response.decode('ascii')
+            print("Welcome, %s ! :)" % response)
+        print("To quit server, enter 'quit' ")
         while connected :
             line=input(">")
             if line == "quit" : 
@@ -48,6 +55,9 @@ class Client:
 if __name__ == "__main__":
     try:
         ch=input('Choose nickname > ')
+        while ch=="" :
+            print("Sorry this nickname is not available !")
+            ch=input('Choose nickname > ')
         Client(ch)
     except KeyboardInterrupt :
         print("Quiting server")
