@@ -1,4 +1,5 @@
 from multiprocessing import *
+from multiprocessing import Queue
 from multiprocessing.sharedctypes import Value, Array
 from socket import *
 import select
@@ -15,41 +16,45 @@ class Serveur:
 	def __init__(self):
 		# Initialisation de la classe """
 		manager = Manager()
-		self.clients = manager.dict()
+		self.clients = {}
 		self.TAILLE_BLOC=1024 # la taille des blocs 
 		self.sock = socket(AF_INET, SOCK_STREAM)
-		self.sock.bind(("127.0.0.1",8888))
+		self.sock.bind(("127.0.0.1",8000))
 		self.sock.listen(5)
 		self.partie_lancee=Value('i', 0)
 		self.partie_en_cours=Value('i', 0)
-		print("Welcome to the best Quiz ever!")
+		self.queue = Queue()
+		queue.put(self.clients)
+		print("Welcome to the best Quiz ever! ")
 		self.run()
 		
 	def run(self):
 		while True:
 			con, addr = self.sock.accept()
-			process = Process(target=self.handle_com, args=(con, addr))
+			process = Process(target=self.handle_com, args=(con, addr, self.queue))
 			process.daemon = True
 			process.start()
-			if self.partie_lancee.value==1 :
-				print("inside if")
+			#if self.partie_lancee.value==1 :
+			#	print("inside if")
 				#game = multiprocessing.Process(target=self.partie, args=(self.clients))
 				#game.daemon = True
 				#game.start()
-				with self.partie_lancee.get_lock():
-					self.partie_lancee.value=0
-				with self.partie_en_cours.get_lock():
-					self.partie_en_cours.value=1
-				self.partie(self.clients)
+			#	self.partie_lancee.acquire()
+			#	self.partie_lancee.value=0
+			#	self.partie_lancee.release()
+			#	self.partie_en_cours.acquire()
+			#	self.partie_en_cours.value=1
+			#	self.partie_en_cours.release()
+			#	self.partie(self.clients)
 		self.sock.close()
 
 		
-	def handle_com(self, sockClient, addr):
+	def handle_com(self, sockClient, addr, queue):
 		connected = True
 		try:
 			pseudo = sockClient.recv(self.TAILLE_BLOC)
 			pseudo=pseudo.decode("ascii")
-			self.clients[sockClient] = pseudo
+			queue.get()[sockClient]=pseudo
 			print("%s joined server" % pseudo)
 			response=pseudo.encode("ascii")
 			sockClient.sendall(response)
@@ -65,13 +70,13 @@ class Serveur:
 						response="You started a new game !\n"
 						response=response.encode("ascii")
 						sockClient.sendall(response)
-						with self.partie_lancee.get_lock():
-							self.partie_lancee.value=1
-						#partie_en_cours=True
+						self.partie_en_cours.acquire()
+						self.partie_en_cours.value=1
+						self.partie_en_cours.release()
 						#process = multiprocessing.Process(target=self.partie, args=(self.clients))
 						#process.daemon = True
 						#process.start()
-						#self.partie(self.clients)
+						self.partie(queue.get())
 					else :
 						ch="Game already started :/"
 						sockClient.sendall(ch.encode("ascii"))
@@ -87,7 +92,7 @@ class Serveur:
 
 	def partie(self, joueurs):
 		print("Connected players : ")
-		print(self.clients)
+		print(joueurs)
 		#for sock in joueurs.keys():
 		#	print(joueurs[sock])
 		#	response="Welcome to the party"

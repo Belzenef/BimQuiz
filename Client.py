@@ -23,7 +23,7 @@ class Client:
         # Attributs
         name = ch
         sock = socket(AF_INET, SOCK_STREAM)
-        sock.connect(('127.0.0.1',8888))
+        sock.connect(('127.0.0.1',8000))
         sock.sendall(name.encode('ascii'))
         response = sock.recv(1024)
         connected=True
@@ -32,7 +32,7 @@ class Client:
             connected=False
         else : 
             response=response.decode('ascii')
-            print("Welcome, %s ! :)" % response)
+            print("Welcome, %s ! :) \nTo stat the Quiz enter 'start'" % response)
         print("To quit server, enter 'quit' ")
         while connected :
             line=input(">")
