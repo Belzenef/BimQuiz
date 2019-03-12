@@ -49,6 +49,7 @@ class Client:
                         self.sock.sendall(line)
                         inp=self.lire(self.sock)
                     else :
+                        line=line.encode('ascii')
                         self.sock.sendall(line)
                         inp=self.lire(self.sock)
                 else : 
@@ -61,13 +62,18 @@ class Client:
             self.sock.close()
 
     def lire(self,sock):
-        res = '0' # entier (0 si pas de réponse attendue, 1 sinon)
+        res = '0' # entier (0 si pas de réponse attendue, 1 si réponse attendue, 3 si test connexion)
         response = sock.recv(1024).decode('ascii')
         if not response : 
             print("Server has been deconnected")
             self.connected=False
-        print(response[:-1])
-        res=response[-1]
+        else :
+            res=response[-1]
+            if res=='3' :
+                sock.send(response[:-1].encode('ascii'))
+                res='0'
+            else :
+                print(response[:-1])
         return res
 
 if __name__ == "__main__":

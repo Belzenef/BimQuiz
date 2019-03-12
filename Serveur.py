@@ -28,13 +28,13 @@ class Serveur:
     def run(self):
         while True:
             con, addr = self.sock.accept()
-            process = Process(target=self.handle_com, args=(con, addr, self.queue))
+            process = Process(target=self.handle_conn, args=(con, addr, self.queue))
             process.daemon = True
             process.start()
         self.sock.close()
 
         
-    def handle_com(self, sockClient, addr, queue):
+    def handle_conn(self, sockClient, addr, queue):
         connected = True
         try:
             pseudo = sockClient.recv(self.TAILLE_BLOC)
@@ -46,7 +46,10 @@ class Serveur:
             while connected:
                 data = sockClient.recv(self.TAILLE_BLOC)
                 data=data.decode('ascii')
-                if data ==  "quit\x00":
+                if not data :
+                    print("%s is deconnected :'(" %pseudo)
+                    connected=False
+                elif data ==  "quit\x00":
                     print("%s has left server :'(" %pseudo)
                     connected=False
                 elif data == "start\x00":
@@ -77,33 +80,33 @@ class Serveur:
         response=response.encode("ascii")
         joueurs={} # joueurs[sock]=(pseudo,score)
         print("Connected players : ")
-        while True :
+        done=False
+        while not done :
             msg=queue.get()
             print("elt queue : ",msg)
             if msg=="Done" :
-                break
+                done=True
             elif type(msg)==type("") :
                 pseudo=msg
                 sock=queue.get()
+                print(sock)
                 score=0
-                try : 
+                if self.connected(sock) :
                     sock.send(response)
                     joueurs[sock]=(pseudo,score)
                     print("joueur :",pseudo)
-                except : 
-                    print("%s already left :/" % pseudo)           
-                    pass 
+                else : 
+                    print("%s is disconnected :'(" %pseudo)           
             else :
                 pseudo="Unknown"
                 sock=msg
                 score=0
-                try : 
+                if self.connected(sock) :
                     sock.send(response)
                     joueurs[sock]=(pseudo,score)
                     print("joueur :",pseudo)
-                except : 
-                    print("%s already left :/" % pseudo)           
-                    pass 
+                else : 
+                    print("%s is deconnected :'(" %pseudo) 
                 
         
         # Récupération des questions
@@ -122,6 +125,17 @@ class Serveur:
             queue.put(joueurs[sock][0])
             queue.put(sock)
             sock.send(response)
+
+    def connected(self,sock):
+        res=False
+        ch="test3"
+        ch=ch.encode('ascii')
+        sock.send(ch)
+        data = sock.recv(self.TAILLE_BLOC).decode('ascii')
+        print(data)
+        if data=="test" :
+            res=True
+        return(res)  
  
 if __name__ == "__main__":
         try:
