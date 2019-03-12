@@ -73,22 +73,38 @@ class Serveur:
         
         # Récupération des joueurs connectés
         queue.put("Done")
+        response="Welcome to the party o/ 0"
+        response=response.encode("ascii")
         joueurs={} # joueurs[sock]=(pseudo,score)
         print("Connected players : ")
         while True :
             msg=queue.get()
+            print("elt queue : ",msg)
             if msg=="Done" :
                 break
             elif type(msg)==type("") :
                 pseudo=msg
                 sock=queue.get()
                 score=0
-                joueurs[sock]=(pseudo,score)
-                print(pseudo)
-        response="Welcome to the party o/ 0"
-        response=response.encode("ascii")
-        for sock in joueurs.keys():
-            sock.send(response)
+                try : 
+                    sock.send(response)
+                    joueurs[sock]=(pseudo,score)
+                    print("joueur :",pseudo)
+                except : 
+                    print("%s already left :/" % pseudo)           
+                    pass 
+            else :
+                pseudo="Unknown"
+                sock=msg
+                score=0
+                try : 
+                    sock.send(response)
+                    joueurs[sock]=(pseudo,score)
+                    print("joueur :",pseudo)
+                except : 
+                    print("%s already left :/" % pseudo)           
+                    pass 
+                
         
         # Récupération des questions
         
@@ -103,6 +119,8 @@ class Serveur:
         response="Thanks for playing ;)\n1"
         response=response.encode("ascii")
         for sock in joueurs.keys():
+            queue.put(joueurs[sock][0])
+            queue.put(sock)
             sock.send(response)
  
 if __name__ == "__main__":
