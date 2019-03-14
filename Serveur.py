@@ -47,7 +47,7 @@ class Serveur:
                 data = sockClient.recv(self.TAILLE_BLOC)
                 data=data.decode('ascii')
                 if not data :
-                    print("%s is deconnected :'(" %pseudo)
+                    print("%s is disconnected :'(" %pseudo)
                     connected=False
                 elif data ==  "quit\x00":
                     print("%s has left server :'(" %pseudo)
@@ -86,7 +86,7 @@ class Serveur:
             print("elt queue : ",msg)
             if msg=="Done" :
                 done=True
-            elif type(msg)==type("") :
+            elif type(msg)==type(" ") :
                 pseudo=msg
                 sock=queue.get()
                 print(sock)
@@ -97,16 +97,16 @@ class Serveur:
                     print("joueur :",pseudo)
                 else : 
                     print("%s is disconnected :'(" %pseudo)           
-            else :
-                pseudo="Unknown"
-                sock=msg
-                score=0
-                if self.connected(sock) :
-                    sock.send(response)
-                    joueurs[sock]=(pseudo,score)
-                    print("joueur :",pseudo)
-                else : 
-                    print("%s is deconnected :'(" %pseudo) 
+            #else :
+                #pseudo="Unknown"
+                #sock=msg
+                #score=0
+                #if self.connected(sock) :
+                     #sock.send(response)
+                    #joueurs[sock]=(pseudo,score)
+                    #print("joueur :",pseudo)
+                #else : 
+                    #print("%s is deconnected :'(" %pseudo) 
                 
         
         # Récupération des questions
@@ -122,9 +122,13 @@ class Serveur:
         response="Thanks for playing ;)\n1"
         response=response.encode("ascii")
         for sock in joueurs.keys():
+            print("remplissage queue")
             queue.put(joueurs[sock][0])
+            print(joueurs[sock][0])
             queue.put(sock)
+            print(sock)
             sock.send(response)
+            print("\n")
 
     def connected(self,sock):
         res=False
