@@ -12,24 +12,24 @@ print(quest[0])
 
 nb_quest=2
 
-liste_quest = [i for i in range(len(quest))]
-quest_al = random.sample(liste_quest, 2)
+list_quest = [i for i in range(len(quest))]
+quest_al = random.sample(list_quest, nb_quest)
 
-compteur=0
+count=0
 for i in quest_al:
   print (quest[i][1])
   print ("V ou F ?")
   answer=input('Votre reponse:')
   if answer == quest[i][2]:
     print ("Bien ouej!")
-    compteur+=1
+    count+=1
   else:
     print ("Bah non patate")
   print("\n")
   input("Appuyez sur une touche pour passer à l'étape suivante ")
   print("\n")
 
-print("Bravo ! Vous avez cummulé {0} points!" .format(compteur))
+print("Bravo ! Vous avez cummulé {0} points!" .format(count))
 
   
   
