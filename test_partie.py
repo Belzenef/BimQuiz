@@ -31,11 +31,6 @@ for i in quest_al:
 
 print("Bravo ! Vous avez cummulé {0} points!" .format(count))
 
-  
-  
-
-
-              
 
 
 

@@ -9,7 +9,7 @@ Created on Mon Feb 11 11:17:49 2019
 from socket import *
 #import select
 from time import time, ctime
-#import sys
+import sys
 #import signal
 
 # Pour éviter l'erreur récurente "port already in use" lors des arrets 
@@ -21,41 +21,67 @@ comSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
 class Client:
     def __init__(self,ch):
         # Attributs
-        name = ch
-        sock = socket(AF_INET, SOCK_STREAM)
-        sock.connect(('127.0.0.1',8000))
-        sock.sendall(name.encode('ascii'))
-        response = sock.recv(1024)
-        connected=True
+        self.name = ch
+        self.connected=False
+        print("Waiting connection...")
+        self.sock = socket(AF_INET, SOCK_STREAM)
+        self.sock.connect(('127.0.0.1',8000))
+        self.sock.sendall(self.name.encode('ascii'))
+        response = self.sock.recv(1024).decode('ascii')
+        print("Welcome, %s ! :) \nTo start a new Quizz enter 'start'" % response)
+        print("To wait for friends, enter 'wait' ")
+        print("To quit server, enter 'quit' ")
+        self.connected=True
+        inp='1'
+        try :
+            while self.connected :
+                if inp=='1' :
+                    line=input(">")
+                    line+="\x00"
+                    if line == "quit\x00" : 
+                        print("Ending connection")
+                        self.sock.sendall(line.encode('ascii'))
+                        self.connected=False
+                    elif line == "wait\x00" :
+                        inp=self.lire(self.sock)
+                    elif line == "start\x00" :
+                        line=line.encode('ascii')
+                        self.sock.sendall(line)
+                        inp=self.lire(self.sock)
+                    else :
+                        line=line.encode('ascii')
+                        self.sock.sendall(line)
+                        inp=self.lire(self.sock)
+                else : 
+                    inp=self.lire(self.sock)
+        except KeyboardInterrupt :
+            print("Ending connection")
+            line = "quit\x00"
+            self.sock.sendall(line.encode('ascii'))
+        finally :
+            self.sock.close()
+
+    def lire(self,sock):
+        res = '0' # entier (0 si pas de réponse attendue, 1 si réponse attendue, 3 si test connexion)
+        response = sock.recv(1024).decode('ascii')
         if not response : 
             print("Server has been deconnected")
-            connected=False
-        else : 
-            response=response.decode('ascii')
-            print("Welcome, %s ! :) \nTo stat the Quiz enter 'start'" % response)
-        print("To quit server, enter 'quit' ")
-        while connected :
-            line=input(">")
-            line+="\x00"
-            if line == "quit\x00" : 
-                print("Ending connection")
-                sock.sendall(line.encode('ascii'))
-                connected=False
+            self.connected=False
+        else :
+            res=response[-1]
+            if res=='3' :
+                sock.send(response[:-1].encode('ascii'))
+                res='0'
             else :
-                line=line.encode('ascii')
-                sock.sendall(line)
-                response = sock.recv(1024)
-                if not response : 
-                    print("Server has been deconnected")
-                    connected=False
-                else : 
-                    response=response.decode('ascii')
-                    print("Him : ", response)
-        sock.close()
+                print(response[:-1])
+        return res
 
 if __name__ == "__main__":
     try:
-        ch=input('Choose nickname > ')
+        if len(sys.argv)>=2 :
+                ch=sys.argv[1]
+        else : 
+            ch=input('Choose nickname > ')
         while ch=="" :
             print("Sorry this nickname is not available !")
             ch=input('Choose nickname > ')
