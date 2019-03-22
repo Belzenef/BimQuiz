@@ -77,7 +77,7 @@ class Client:
         return res
 
 if __name__ == "__main__":
-    try:
+    #try:
         if len(sys.argv)>=2 :
                 ch=sys.argv[1]
         else : 
@@ -86,9 +86,9 @@ if __name__ == "__main__":
             print("Sorry this nickname is not available !")
             ch=input('Choose nickname > ')
         Client(ch)
-    except KeyboardInterrupt :
-        print("Quiting server")
-    except:
-        print("Unexpected exception ... Sorry :/")
-    finally :
-        print('Thanks for playing ! ^_^ ')
+    #except KeyboardInterrupt :
+        #print("Quiting server")
+    #except:
+        #print("Unexpected exception ... Sorry :/")
+    #finally :
+        #print('Thanks for playing ! ^_^ ')

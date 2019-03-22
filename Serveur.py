@@ -1,5 +1,5 @@
-from multiprocessing import *
-from multiprocessing import Queue
+import multiprocessing as mp
+from multiprocessing import Queue, Manager, Process
 from multiprocessing.sharedctypes import Value, Array
 from socket import *
 import select
@@ -21,18 +21,17 @@ class Serveur:
         self.sock.listen(5)
         self.partie_lancee=Value('i', 0)
         self.partie_en_cours=Value('i', 0)
-        self.queue = Queue()
+        self.queue = Manager().Queue()
         print("Welcome to the best Quiz ever! ")
         self.run()
 
     def run(self):
         while True:
             con, addr = self.sock.accept()
-            process = Process(target=self.handle_conn, args=(con, addr, self.queue))
+            process = mp.Process(target=self.handle_conn, args=(con, addr, self.queue))
             process.daemon = True
             process.start()
         self.sock.close()
-
         
     def handle_conn(self, sockClient, addr, queue):
         connected = True
@@ -49,7 +48,7 @@ class Serveur:
                 if not data :
                     print("%s is disconnected :'(" %pseudo)
                     connected=False
-                elif data ==  "quit\x00":
+                if data ==  "quit\x00":
                     print("%s has left server :'(" %pseudo)
                     connected=False
                 elif data == "start\x00":
@@ -60,9 +59,10 @@ class Serveur:
                         self.partie_en_cours.acquire()
                         self.partie_en_cours.value=1
                         self.partie_en_cours.release()
-#                        game = multiprocessing.Process(target=self.partie, args=(queue))
-#                        game.daemon = True
-#                        game.start()
+                        #game = mp.Process(target=self.partie, args=(queue))
+                        #game.daemon = True
+                        #game.start()
+                        #game.join()
                         self.partie(queue)
                     else :
                         response="Game already started :/0"
@@ -73,8 +73,8 @@ class Serveur:
             sockClient.close()
 
     def partie(self, queue):
-        
-        # Récupération des joueurs connectés
+        print("hey")
+        # Recuperation des joueurs connectes
         queue.put("Done")
         response="Welcome to the party o/ 0"
         response=response.encode("ascii")
@@ -89,7 +89,6 @@ class Serveur:
             elif type(msg)==type(" ") :
                 pseudo=msg
                 sock=queue.get()
-                print(sock)
                 score=0
                 if self.connected(sock) :
                     sock.send(response)
@@ -109,9 +108,9 @@ class Serveur:
                     #print("%s is deconnected :'(" %pseudo) 
                 
         
-        # Récupération des questions
+        # Recuperation des questions
         
-        # Déroulé du quizz
+        # Deroule du quizz
         
         # Affichage des scores
         
@@ -149,8 +148,14 @@ if __name__ == "__main__":
         except:
             print("Unexpected exception")
         finally:
-            for process in active_children():
+            for process in mp.active_children():
                 print("Shutting down process ", process)
                 process.terminate()
                 process.join()
             print("END")
+
+
+# https://pytorch.org/docs/stable/notes/multiprocessing.html
+#https://realpython.com/python-sockets/
+#https://github.com/JustinTulloss/zeromq.node/issues/163
+#https://bugs.python.org/issue4892
