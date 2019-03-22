@@ -23,14 +23,15 @@ class Client:
         # Attributs
         self.name = ch
         self.connected=False
-        print("Waiting connection...")
+        print("En attente de connexion ...")
         self.sock = socket(AF_INET, SOCK_STREAM)
         self.sock.connect(('127.0.0.1',8000))
         self.sock.sendall(self.name.encode('ascii'))
         response = self.sock.recv(1024).decode('ascii')
-        print("Welcome, %s ! :) \nTo start a new Quizz enter 'start'" % response)
-        print("To wait for friends, enter 'wait' ")
-        print("To quit server, enter 'quit' ")
+        print("Bienvenue, %s ! :) \n" % response)
+        print("Tapez 'start' pour lancer une partie")
+        print("Tapez 'wait' pour attendre vos amis")
+        print("Tapez 'quit' pour quiter le jeu")
         self.connected=True
         inp='1'
         try :
@@ -39,7 +40,7 @@ class Client:
                     line=input(">")
                     line+="\x00"
                     if line == "quit\x00" : 
-                        print("Ending connection")
+                        print("Fin de la connexion")
                         self.sock.sendall(line.encode('ascii'))
                         self.connected=False
                     elif line == "wait\x00" :
@@ -55,7 +56,7 @@ class Client:
                 else : 
                     inp=self.lire(self.sock)
         except KeyboardInterrupt :
-            print("Ending connection")
+            print("Fin de la connexion")
             line = "quit\x00"
             self.sock.sendall(line.encode('ascii'))
         finally :
@@ -65,7 +66,7 @@ class Client:
         res = '0' # entier (0 si pas de réponse attendue, 1 si réponse attendue, 3 si test connexion)
         response = sock.recv(1024).decode('ascii')
         if not response : 
-            print("Server has been deconnected")
+            print("Le serveur a ete deconnecte")
             self.connected=False
         else :
             res=response[-1]
@@ -81,10 +82,10 @@ if __name__ == "__main__":
         if len(sys.argv)>=2 :
                 ch=sys.argv[1]
         else : 
-            ch=input('Choose nickname > ')
+            ch=input('Choisissez un pseudo > ')
         while ch=="" :
-            print("Sorry this nickname is not available !")
-            ch=input('Choose nickname > ')
+            print("Desole, ce pseudo n'est pas valide !")
+            ch=input('Choisissez un pseudo > ')
         Client(ch)
     #except KeyboardInterrupt :
         #print("Quiting server")

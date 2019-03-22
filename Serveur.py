@@ -25,7 +25,7 @@ class Serveur:
         self.partie_lancee=Value('i', 0)
         self.partie_en_cours=Value('i', 0)
         self.queue = Manager().Queue()
-        print("Welcome to the best Quiz ever! ")
+        print("Lancement du serveur de Quizz")
         self.run()
 
     def run(self):
@@ -85,21 +85,21 @@ class Serveur:
         pseudo=pseudo.decode("ascii")
         queue.put(pseudo)
         queue.put(sockClient)
-        print("%s joined server" % pseudo)
+        print("%s a rejoint le serveur" % pseudo)
         sockClient.sendall(pseudo.encode("ascii"))
         while connected:
             data = sockClient.recv(self.TAILLE_BLOC)
             data=data.decode('ascii')
             if not data :
-                print("%s is disconnected :'(" %pseudo)
+                print("%s est deconnecte :'(" %pseudo)
                 connected=False
             elif data ==  "quit\x00":
-                print("%s has left server :'(" %pseudo)
+                print("%s a quitte le serveur :'(" %pseudo)
                 connected=False
             elif data == "start\x00":
                 if self.partie_en_cours.value==0 :
-                    print("Starting game ...")
-                    response="You started a new game !0"
+                    print("Lancement de la partie ...\n")
+                    response="Vous avez lance une partie !0"
                     sockClient.sendall(response.encode("ascii"))
                     self.partie_en_cours.acquire()
                     self.partie_en_cours.value=1
@@ -110,7 +110,7 @@ class Serveur:
                         #game.join()
                     self.partie(queue)
                 else :
-                    response="Game already started :/0"
+                    response="Une partie est deja en cours :/0"
                     sockClient.sendall(response.encode("ascii"))
         #except:
             #print("Problem in request ?")
@@ -118,17 +118,16 @@ class Serveur:
         sockClient.close()
 
     def partie(self, queue):
-        print("hey")
         # Récupération des joueurs connectés
         queue.put("Done")
-        response="Welcome to the party o/ 0"
+        response="La partie va commencer o/ 0"
         response=response.encode("ascii")
         joueurs={} # joueurs[sock]=(pseudo,score)
-        print("Connected players : ")
+        print("Joueurs connectes : ")
         done=False
         while not done :
             msg=queue.get()
-            print("elt queue : ",msg)
+            #print("elt queue : ",msg)
             if msg=="Done" :
                 done=True
             elif type(msg)==type(" ") :
@@ -138,10 +137,10 @@ class Serveur:
                 if self.connected(sock) :
                     sock.send(response)
                     rep=""
-                    joueurs[sock]=(pseudo,score)
-                    print("joueur :",pseudo)
+                    joueurs[sock]=[pseudo,score]
+                    print(pseudo)
                 else : 
-                    print("%s is disconnected :'(" %pseudo)           
+                    print("%s est deconnecte :'(" %pseudo)           
             #else :
                 #pseudo="Unknown"
                 #sock=msg
@@ -154,7 +153,7 @@ class Serveur:
                     #print("%s is deconnected :'(" %pseudo) 
                     
         # Récupération des questions
-        tab = csv.reader(open("question_quizz.csv","r", encoding ="utf-8"), dialect='excel-tab')
+        tab = csv.reader(open("questions.csv","r", encoding ="utf-8"), dialect='excel-tab')
         quest=[]
         for row in tab: 
             quest.append(row)
@@ -170,38 +169,32 @@ class Serveur:
                 sock.send(question.encode("ascii"))
                 sock.send(V_F.encode("ascii"))
                 sock.send(votre_rep.encode("ascii"))  
-                #print("jhfdkhgkjfdhgsj")        
                 answer=sock.recv(self.TAILLE_BLOC)
-                #print("youhou")
-                #answer=answer.decode('ascii')  
-                #print(answer[0] == quest[i][2])
-                print(type(answer[0]))
+                answer=answer.decode('ascii')
                 if answer[0].capitalize() == quest[i][2]:
-                    #print("blavlia")
                     joueurs[sock][1] +=1
-                    rep_joueur="Bien ouej!\n"
+                    rep_joueur="Bravo !\n"
                 else:
-                    #print("blaglikjfdhgjfshiufsl")
-                    rep_joueur="Bah non patate\n"
+                    rep_joueur="Perdu !\n"
                 sock.sendall(rep_joueur.encode("ascii"))
             
         # Affichage des scores
             
         for sock in joueurs.keys():
-            score_tot="Bravo ! Vous avez {0} points!\n0" .format(joueurs[sock][1])
+            score_tot="Bien joue ! Vous avez {0} point(s) !\n0" .format(joueurs[sock][1])
             sock.sendall(score_tot.encode("ascii"))
           
         # Fin de la partie
         self.partie_en_cours.acquire()
         self.partie_en_cours.value=0
         self.partie_en_cours.release()
-        response="Thanks for playing ;)\n1"
+        response="Merci d'avoir joue ;)\n1"
         response=response.encode("ascii")
         for sock in joueurs.keys():
             queue.put(joueurs[sock][0])
             queue.put(sock)
             sock.send(response)
-            print("\n")
+            print("Fin de la partie ...\n")
 
     def connected(self,sock):
         res=False
@@ -209,7 +202,6 @@ class Serveur:
         ch=ch.encode('ascii')
         sock.send(ch)
         data = sock.recv(self.TAILLE_BLOC).decode('ascii')
-        print(data)
         if data=="test" :
             res=True
         return(res)  
@@ -218,15 +210,15 @@ if __name__ == "__main__":
         try:
             Serveur()
         except KeyboardInterrupt :
-            print("Shutting down server")
+            print("Fermeture du serveur")
         except:
-            print("Unexpected exception")
+            print("Exception inattendue")
         finally:
             for process in mp.active_children():
-                print("Shutting down process ", process)
+                print("Fermeture du processus ", process)
                 process.terminate()
                 process.join()
-            print("END")
+            print("FIN")
 
 
 # https://pytorch.org/docs/stable/notes/multiprocessing.html
