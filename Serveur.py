@@ -7,6 +7,9 @@ from time import time, ctime
 import sys
 import signal
 import traceback
+import re
+import csv
+import random
 
 comSocket = socket(AF_INET, SOCK_STREAM)
 comSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
@@ -35,46 +38,88 @@ class Serveur:
         
     def handle_conn(self, sockClient, addr, queue):
         connected = True
-        try:
-            pseudo = sockClient.recv(self.TAILLE_BLOC)
-            pseudo=pseudo.decode("ascii")
-            queue.put(pseudo)
-            queue.put(sockClient)
-            print("%s joined server" % pseudo)
-            sockClient.sendall(pseudo.encode("ascii"))
-            while connected:
-                data = sockClient.recv(self.TAILLE_BLOC)
-                data=data.decode('ascii')
-                if not data :
-                    print("%s is disconnected :'(" %pseudo)
-                    connected=False
-                if data ==  "quit\x00":
-                    print("%s has left server :'(" %pseudo)
-                    connected=False
-                elif data == "start\x00":
-                    if self.partie_en_cours.value==0 :
-                        print("Starting game ...")
-                        response="You started a new game !0"
-                        sockClient.sendall(response.encode("ascii"))
-                        self.partie_en_cours.acquire()
-                        self.partie_en_cours.value=1
-                        self.partie_en_cours.release()
-                        #game = mp.Process(target=self.partie, args=(queue))
+#<<<<<<< HEAD
+#        try:
+#            pseudo = sockClient.recv(self.TAILLE_BLOC)
+#            pseudo=pseudo.decode("ascii")
+#            queue.put(pseudo)
+#            queue.put(sockClient)
+#            print("%s joined server" % pseudo)
+#            sockClient.sendall(pseudo.encode("ascii"))
+#            while connected:
+#                data = sockClient.recv(self.TAILLE_BLOC)
+#                data=data.decode('ascii')
+#                if not data :
+#                    print("%s is disconnected :'(" %pseudo)
+#                    connected=False
+#                if data ==  "quit\x00":
+#                    print("%s has left server :'(" %pseudo)
+#                    connected=False
+#                elif data == "start\x00":
+#                    if self.partie_en_cours.value==0 :
+#                        print("Starting game ...")
+#                        response="You started a new game !0"
+#                        sockClient.sendall(response.encode("ascii"))
+#                        self.partie_en_cours.acquire()
+#                        self.partie_en_cours.value=1
+#                        self.partie_en_cours.release()
+#                        #game = mp.Process(target=self.partie, args=(queue))
+#                        #game.daemon = True
+#                        #game.start()
+#                        #game.join()
+#                        self.partie(queue)
+#                    else :
+#                        response="Game already started :/0"
+#                        sockClient.sendall(response.encode("ascii"))
+#        except:
+#            print("Problem in request ?")
+#        finally:
+#            sockClient.close()
+#
+#    def partie(self, queue):
+#        print("hey")
+#        # Recuperation des joueurs connectes
+#=======
+        #try:
+        pseudo = sockClient.recv(self.TAILLE_BLOC)
+        pseudo=pseudo.decode("ascii")
+        queue.put(pseudo)
+        queue.put(sockClient)
+        print("%s joined server" % pseudo)
+        sockClient.sendall(pseudo.encode("ascii"))
+        while connected:
+            data = sockClient.recv(self.TAILLE_BLOC)
+            data=data.decode('ascii')
+            if not data :
+                print("%s is disconnected :'(" %pseudo)
+                connected=False
+            elif data ==  "quit\x00":
+                print("%s has left server :'(" %pseudo)
+                connected=False
+            elif data == "start\x00":
+                if self.partie_en_cours.value==0 :
+                    print("Starting game ...")
+                    response="You started a new game !0"
+                    sockClient.sendall(response.encode("ascii"))
+                    self.partie_en_cours.acquire()
+                    self.partie_en_cours.value=1
+                    self.partie_en_cours.release()
+                        #game = multiprocessing.Process(target=self.partie, args=(queue))
                         #game.daemon = True
                         #game.start()
                         #game.join()
-                        self.partie(queue)
-                    else :
-                        response="Game already started :/0"
-                        sockClient.sendall(response.encode("ascii"))
-        except:
-            print("Problem in request ?")
-        finally:
-            sockClient.close()
+                    self.partie(queue)
+                else :
+                    response="Game already started :/0"
+                    sockClient.sendall(response.encode("ascii"))
+        #except:
+            #print("Problem in request ?")
+        #finally:
+        sockClient.close()
 
     def partie(self, queue):
         print("hey")
-        # Recuperation des joueurs connectes
+        # Récupération des joueurs connectés
         queue.put("Done")
         response="Welcome to the party o/ 0"
         response=response.encode("ascii")
@@ -92,6 +137,7 @@ class Serveur:
                 score=0
                 if self.connected(sock) :
                     sock.send(response)
+                    rep=""
                     joueurs[sock]=(pseudo,score)
                     print("joueur :",pseudo)
                 else : 
@@ -106,14 +152,45 @@ class Serveur:
                     #print("joueur :",pseudo)
                 #else : 
                     #print("%s is deconnected :'(" %pseudo) 
-                
-        
-        # Recuperation des questions
-        
-        # Deroule du quizz
-        
+                    
+        # Récupération des questions
+        tab = csv.reader(open("question_quizz.csv","r", encoding ="utf-8"), dialect='excel-tab')
+        quest=[]
+        for row in tab: 
+            quest.append(row)
+        nb_quest=2
+        list_quest = [i for i in range(len(quest))]
+        quest_al = random.sample(list_quest, nb_quest)
+        # Déroulé du quizz
+        for i in quest_al:
+            for sock in joueurs.keys():
+                V_F="\nV ou F ?\n"
+                votre_rep="Votre reponse:1"
+                question=quest[i][1][:-1]
+                sock.send(question.encode("ascii"))
+                sock.send(V_F.encode("ascii"))
+                sock.send(votre_rep.encode("ascii"))  
+                #print("jhfdkhgkjfdhgsj")        
+                answer=sock.recv(self.TAILLE_BLOC)
+                #print("youhou")
+                #answer=answer.decode('ascii')  
+                #print(answer[0] == quest[i][2])
+                print(type(answer[0]))
+                if answer[0].capitalize() == quest[i][2]:
+                    #print("blavlia")
+                    joueurs[sock][1] +=1
+                    rep_joueur="Bien ouej!\n"
+                else:
+                    #print("blaglikjfdhgjfshiufsl")
+                    rep_joueur="Bah non patate\n"
+                sock.sendall(rep_joueur.encode("ascii"))
+            
         # Affichage des scores
-        
+            
+        for sock in joueurs.keys():
+            score_tot="Bravo ! Vous avez {0} points!\n0" .format(joueurs[sock][1])
+            sock.sendall(score_tot.encode("ascii"))
+          
         # Fin de la partie
         self.partie_en_cours.acquire()
         self.partie_en_cours.value=0
@@ -121,11 +198,8 @@ class Serveur:
         response="Thanks for playing ;)\n1"
         response=response.encode("ascii")
         for sock in joueurs.keys():
-            print("remplissage queue")
             queue.put(joueurs[sock][0])
-            print(joueurs[sock][0])
             queue.put(sock)
-            print(sock)
             sock.send(response)
             print("\n")
 
