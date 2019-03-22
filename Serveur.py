@@ -38,48 +38,6 @@ class Serveur:
         
     def handle_conn(self, sockClient, addr, queue):
         connected = True
-#<<<<<<< HEAD
-#        try:
-#            pseudo = sockClient.recv(self.TAILLE_BLOC)
-#            pseudo=pseudo.decode("ascii")
-#            queue.put(pseudo)
-#            queue.put(sockClient)
-#            print("%s joined server" % pseudo)
-#            sockClient.sendall(pseudo.encode("ascii"))
-#            while connected:
-#                data = sockClient.recv(self.TAILLE_BLOC)
-#                data=data.decode('ascii')
-#                if not data :
-#                    print("%s is disconnected :'(" %pseudo)
-#                    connected=False
-#                if data ==  "quit\x00":
-#                    print("%s has left server :'(" %pseudo)
-#                    connected=False
-#                elif data == "start\x00":
-#                    if self.partie_en_cours.value==0 :
-#                        print("Starting game ...")
-#                        response="You started a new game !0"
-#                        sockClient.sendall(response.encode("ascii"))
-#                        self.partie_en_cours.acquire()
-#                        self.partie_en_cours.value=1
-#                        self.partie_en_cours.release()
-#                        #game = mp.Process(target=self.partie, args=(queue))
-#                        #game.daemon = True
-#                        #game.start()
-#                        #game.join()
-#                        self.partie(queue)
-#                    else :
-#                        response="Game already started :/0"
-#                        sockClient.sendall(response.encode("ascii"))
-#        except:
-#            print("Problem in request ?")
-#        finally:
-#            sockClient.close()
-#
-#    def partie(self, queue):
-#        print("hey")
-#        # Recuperation des joueurs connectes
-#=======
         #try:
         pseudo = sockClient.recv(self.TAILLE_BLOC)
         pseudo=pseudo.decode("ascii")
@@ -108,7 +66,7 @@ class Serveur:
                         #game.daemon = True
                         #game.start()
                         #game.join()
-                    self.partie(queue)
+                    self.partie(queue,sockClient)
                 else :
                     response="Une partie est deja en cours :/0"
                     sockClient.sendall(response.encode("ascii"))
@@ -117,10 +75,10 @@ class Serveur:
         #finally:
         sockClient.close()
 
-    def partie(self, queue):
+    def partie(self, queue, lanceur):
         # Récupération des joueurs connectés
         queue.put("Done")
-        response="La partie va commencer o/ 0"
+        response="La partie va commencer o/ \n0"
         response=response.encode("ascii")
         joueurs={} # joueurs[sock]=(pseudo,score)
         print("Joueurs connectes : ")
@@ -136,7 +94,6 @@ class Serveur:
                 score=0
                 if self.connected(sock) :
                     sock.send(response)
-                    rep=""
                     joueurs[sock]=[pseudo,score]
                     print(pseudo)
                 else : 
@@ -157,17 +114,34 @@ class Serveur:
         quest=[]
         for row in tab: 
             quest.append(row)
-        nb_quest=2
+            
+        # Choix du thème
+        
+        # Choix du nb de questions
+        msg="Combien de questions ? (max %d)\n1" %len(quest)
+        msg=msg.encode("ascii")
+        lanceur.send(msg)
+        rep=lanceur.recv(self.TAILLE_BLOC)
+        rep=rep.decode('ascii')
+        rep=int(rep[0]) # try catch pour eviter erreur
+        if type(rep)==type(2) and rep<=len(quest) :
+            nb_quest=rep
+        else:
+            nb_quest=3
+        
+        # Selection des questions
         list_quest = [i for i in range(len(quest))]
         quest_al = random.sample(list_quest, nb_quest)
+        
         # Déroulé du quizz
+        count=1
         for i in quest_al:
             for sock in joueurs.keys():
-                V_F="\nV ou F ?\n"
-                votre_rep="Votre reponse:1"
+                V_F="\nQuestion %d de %d: Repondez par Vrai (V) ou Faux (F)\n" % (count,nb_quest) 
+                votre_rep="\nReponse:1"
                 question=quest[i][1][:-1]
-                sock.send(question.encode("ascii"))
                 sock.send(V_F.encode("ascii"))
+                sock.send(question.encode("ascii"))
                 sock.send(votre_rep.encode("ascii"))  
                 answer=sock.recv(self.TAILLE_BLOC)
                 answer=answer.decode('ascii')
@@ -177,6 +151,7 @@ class Serveur:
                 else:
                     rep_joueur="Perdu !\n"
                 sock.sendall(rep_joueur.encode("ascii"))
+            count+=1
             
         # Affichage des scores
             
