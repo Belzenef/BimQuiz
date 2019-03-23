@@ -7,7 +7,6 @@ from time import time, ctime
 import sys
 import signal
 import traceback
-import re
 import csv
 import random
 
@@ -62,13 +61,9 @@ class Serveur:
                     self.partie_en_cours.acquire()
                     self.partie_en_cours.value=1
                     self.partie_en_cours.release()
-                        #game = multiprocessing.Process(target=self.partie, args=(queue))
-                        #game.daemon = True
-                        #game.start()
-                        #game.join()
                     self.partie(queue,sockClient)
                 else :
-                    response="Une partie est deja en cours :/0"
+                    response="Une partie est deja en cours, merci de patienter :/1"
                     sockClient.sendall(response.encode("ascii"))
         #except:
             #print("Problem in request ?")
@@ -78,14 +73,14 @@ class Serveur:
     def partie(self, queue, lanceur):
         # Récupération des joueurs connectés
         queue.put("Done")
-        response="La partie va commencer o/ \n0"
+        response="La partie va commencer o/ \nVous avez 30sec pour repondre a chaque question ... \nBonne chance ! \n0"
         response=response.encode("ascii")
         joueurs={} # joueurs[sock]=(pseudo,score)
         print("Joueurs connectes : ")
         done=False
+        nb_joueurs=0
         while not done :
             msg=queue.get()
-            #print("elt queue : ",msg)
             if msg=="Done" :
                 done=True
             elif type(msg)==type(" ") :
@@ -95,20 +90,11 @@ class Serveur:
                 if self.connected(sock) :
                     sock.send(response)
                     joueurs[sock]=[pseudo,score]
+                    nb_joueurs+=1
                     print(pseudo)
                 else : 
-                    print("%s est deconnecte :'(" %pseudo)           
-            #else :
-                #pseudo="Unknown"
-                #sock=msg
-                #score=0
-                #if self.connected(sock) :
-                     #sock.send(response)
-                    #joueurs[sock]=(pseudo,score)
-                    #print("joueur :",pseudo)
-                #else : 
-                    #print("%s is deconnected :'(" %pseudo) 
-                    
+                    print("%s est deconnecte :'(" %pseudo)
+
         # Récupération des questions
         tab = csv.reader(open("question_quizz.csv","r", encoding ="utf-8"), dialect='excel-tab')
         count = 0
@@ -137,25 +123,28 @@ class Serveur:
             msg="Vous avez fait n'importe quoi alors on vous donne un theme aleatoire : %s \n" %theme
             msg=msg.encode("ascii")
             lanceur.send(msg)
-        
-        
+
         # Choix du nb de questions
         msg="Combien de questions ? (max %d)\n1" %len(quest[theme])
         msg=msg.encode("ascii")
         lanceur.send(msg)
         rep=lanceur.recv(self.TAILLE_BLOC)
         rep=rep.decode('ascii')
-        rep=int(rep[:-1]) # try catch pour eviter erreur
-        if type(rep)==type(2) and rep<=len(quest[theme]) :
-            nb_quest=rep
-        else:
+        try :
+            rep=int(rep[:-1]) # try catch pour eviter erreur
+            if type(rep)==type(2) and rep<=len(quest[theme]) :
+                nb_quest=rep
+            else:
+                nb_quest=3
+        except :
             nb_quest=3
-        
+            pass
+
         # Selection des questions
         nb_quest_theme = [i for i in range(len(quest[theme]))]
         index_al = random.sample(nb_quest_theme, nb_quest)
-        
-        
+
+
         # Déroulé du quizz
         count=1
         for i in index_al:
@@ -166,16 +155,41 @@ class Serveur:
                 sock.send(V_F.encode("ascii"))
                 sock.send(question.encode("ascii"))
                 sock.send(votre_rep.encode("ascii"))  
-                answer=sock.recv(self.TAILLE_BLOC)
-                answer=answer.decode('ascii')
-                if answer[0].capitalize() == quest[theme][i][1]:
-                    joueurs[sock][1] +=1
-                    rep_joueur="Bravo !\n"
+            print("Question %d posee" % count)
+            nb_rep=0
+            t = 0
+            lus=[]
+            while(nb_rep<nb_joueurs and t<10) :
+                debut=time()
+                try:
+                    a_lire, wlist, xlist = select.select(joueurs.keys(),[], [], 10)
+                except select.error:
+                    print("select error")
+                    pass
                 else:
-                    rep_joueur="Perdu !\n"
-                sock.sendall(rep_joueur.encode("ascii"))
+                    # On parcourt la liste des clients à lire
+                    for sock in a_lire: # Client est de type socket
+                        lus.append(sock)
+                        answer = sock.recv(self.TAILLE_BLOC)
+                        answer = answer.decode("ascii")
+                        print(answer)
+                        nb_rep+=1
+                        if answer[0].capitalize() == quest[theme][i][1]:
+                            joueurs[sock][1] +=1
+                            rep_joueur="Bravo !\n"
+                        else:
+                            rep_joueur="Perdu !\n"
+                        sock.sendall(rep_joueur.encode("ascii"))
+                fin=time()
+                t+=fin-debut
+            for sock in joueurs.keys() :
+                if sock not in lus :
+                    rep_joueur="Temps ecoule !\n"
+                    sock.sendall(rep_joueur.encode("ascii"))
+            print("Tous les joueurs ont repondu")
             count+=1
             
+
         # Creation du classement
         classment = joueurs.items()
         
@@ -194,6 +208,7 @@ class Serveur:
             else:
                 score_tot="Bien joue ! Vous avez {0} point(s) !\n" .format(joueurs[sock][1])
             sock.sendall(score_tot.encode("ascii"))
+
             podium = "Classement de la partie :\n"
             sock.sendall(podium.encode("ascii"))
             for i in pod:
@@ -210,7 +225,7 @@ class Serveur:
             queue.put(joueurs[sock][0])
             queue.put(sock)
             sock.send(response)
-            print("Fin de la partie ...\n")
+        print("Fin de la partie ...\n")
 
     def connected(self,sock):
         res=False
