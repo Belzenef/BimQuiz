@@ -10,6 +10,7 @@ from socket import *
 #import select
 from time import time, ctime
 import sys
+import select
 #import signal
 
 # Pour éviter l'erreur récurente "port already in use" lors des arrets 
@@ -37,21 +38,26 @@ class Client:
         try :
             while self.connected :
                 if inp=='1' :
-                    line=input(">")
-                    line+="\x00"
-                    if line == "quit\x00" : 
-                        print("Fin de la connexion")
-                        self.sock.sendall(line.encode('ascii'))
-                        self.connected=False
-                    elif line == "wait\x00" :
-                        inp=self.lire(self.sock)
-                    elif line == "start\x00" :
-                        line=line.encode('ascii')
-                        self.sock.sendall(line)
-                        inp=self.lire(self.sock)
-                    else :
-                        line=line.encode('ascii')
-                        self.sock.sendall(line)
+                    print(">")
+                    i, o, e = select.select( [sys.stdin], [], [], 10 )
+                    if (i):
+                        line= sys.stdin.readline().strip()
+                        line+="\x00"
+                        if line == "quit\x00" : 
+                            print("Fin de la connexion")
+                            self.sock.sendall(line.encode('ascii'))
+                            self.connected=False
+                        elif line == "wait\x00" :
+                            inp=self.lire(self.sock)
+                        elif line == "start\x00" :
+                            line=line.encode('ascii')
+                            self.sock.sendall(line)
+                            inp=self.lire(self.sock)
+                        else :
+                            line=line.encode('ascii')
+                            self.sock.sendall(line)
+                            inp=self.lire(self.sock)
+                    else:
                         inp=self.lire(self.sock)
                 else : 
                     inp=self.lire(self.sock)
@@ -78,7 +84,7 @@ class Client:
         return res
 
 if __name__ == "__main__":
-    #try:
+    try:
         if len(sys.argv)>=2 :
                 ch=sys.argv[1]
         else : 
@@ -87,9 +93,9 @@ if __name__ == "__main__":
             print("Desole, ce pseudo n'est pas valide !")
             ch=input('Choisissez un pseudo > ')
         Client(ch)
-    #except KeyboardInterrupt :
-        #print("Quiting server")
-    #except:
-        #print("Unexpected exception ... Sorry :/")
-    #finally :
-        #print('Thanks for playing ! ^_^ ')
+    except KeyboardInterrupt :
+        print("Fin de la connexion au serveur")
+    except:
+        print("Exception inatendue")
+    finally :
+        print("Merci d'avoir joue ! ^_^ ")
