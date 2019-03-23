@@ -111,41 +111,64 @@ class Serveur:
                     
         # Récupération des questions
         tab = csv.reader(open("questions.csv","r", encoding ="utf-8"), dialect='excel-tab')
-        quest=[]
-        for row in tab: 
-            quest.append(row)
+        count = 0
+        quest ={}
+        for row in tab:
+            if count ==0:
+                quest[row[0]] = [] 
+            quest[row[0]].append([row[1],row[2]])
+            count +=1
             
+            if count == 10:
+                count =0
+
         # Choix du thème
+        choix_theme=random.sample(quest.keys(),3)
+        msg="Entrer le theme de votre choix parmis ces trois : %s, %s et %s1" %(choix_theme[0],choix_theme[1],choix_theme[2])
+        msg=msg.encode("ascii")
+        lanceur.send(msg)
+        rep=lanceur.recv(self.TAILLE_BLOC)
+        rep=rep.decode('ascii')
+        rep = rep[:-1].lower()
+        if rep == choix_theme[0] or rep == choix_theme[1] or rep== choix_theme[2]:
+            theme = rep
+        else:
+            theme = random.sample(quest.keys(),1)[0]
+            msg="Vous avez fait n'importe quoi alors on vous donne un theme aleatoire : %s \n" %theme
+            msg=msg.encode("ascii")
+            lanceur.send(msg)
+        
         
         # Choix du nb de questions
-        msg="Combien de questions ? (max %d)\n1" %len(quest)
+        msg="Combien de questions ? (max %d)\n1" %len(quest[theme])
         msg=msg.encode("ascii")
         lanceur.send(msg)
         rep=lanceur.recv(self.TAILLE_BLOC)
         rep=rep.decode('ascii')
         rep=int(rep[0]) # try catch pour eviter erreur
-        if type(rep)==type(2) and rep<=len(quest) :
+        if type(rep)==type(2) and rep<=len(quest[theme]) :
             nb_quest=rep
         else:
             nb_quest=3
         
         # Selection des questions
-        list_quest = [i for i in range(len(quest))]
-        quest_al = random.sample(list_quest, nb_quest)
-        
+        nb_quest_theme = [i for i in range(len(quest[theme]))]
+        print(nb_quest_theme)
+        index_al = random.sample(nb_quest_theme, nb_quest)
+        print(index_al)
         # Déroulé du quizz
         count=1
-        for i in quest_al:
+        for i in index_al:
             for sock in joueurs.keys():
                 V_F="\nQuestion %d de %d: Repondez par Vrai (V) ou Faux (F)\n" % (count,nb_quest) 
                 votre_rep="\nReponse:1"
-                question=quest[i][1][:-1]
+                question=quest[theme][i][0][:-1]
                 sock.send(V_F.encode("ascii"))
                 sock.send(question.encode("ascii"))
                 sock.send(votre_rep.encode("ascii"))  
                 answer=sock.recv(self.TAILLE_BLOC)
                 answer=answer.decode('ascii')
-                if answer[0].capitalize() == quest[i][2]:
+                if answer[0].capitalize() == quest[theme][i][1]:
                     joueurs[sock][1] +=1
                     rep_joueur="Bravo !\n"
                 else:
