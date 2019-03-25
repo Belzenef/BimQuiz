@@ -130,7 +130,6 @@ class Serveur:
         lanceur.send(msg)
         rep=lanceur.recv(self.TAILLE_BLOC)
         rep=rep.decode('ascii')
-<<<<<<< HEAD
         try :
             rep=int(rep[:-1]) # try catch pour eviter erreur
             if type(rep)==type(2) and rep<=len(quest[theme]) :
@@ -158,10 +157,9 @@ class Serveur:
                 sock.send(question.encode("ascii"))
                 sock.send(votre_rep.encode("ascii"))  
             print("Question %d posee" % count)
-            nb_rep=0
             t = 0
-            lus=[]
-            while(nb_rep<nb_joueurs and t<10) :
+            ont_repondu=[]
+            while(len(ont_repondu)<nb_joueurs and t<10) :
                 debut=time()
                 try:
                     a_lire, wlist, xlist = select.select(joueurs.keys(),[], [], 10)
@@ -171,24 +169,23 @@ class Serveur:
                 else:
                     # On parcourt la liste des clients à lire
                     for sock in a_lire: # Client est de type socket
-                        lus.append(sock)
-                        answer = sock.recv(self.TAILLE_BLOC)
-                        answer = answer.decode("ascii")
-                        print(answer)
-                        nb_rep+=1
-                        if answer[0].capitalize() == quest[theme][i][1]:
-                            joueurs[sock][1] +=1
-                            rep_joueur="Bravo !\n"
-                        else:
-                            rep_joueur="Perdu !\n"
-                        sock.sendall(rep_joueur.encode("ascii"))
+                        ont_repondu.append(sock)
                 fin=time()
                 t+=fin-debut
             for sock in joueurs.keys() :
-                if sock not in lus :
+                if sock in ont_repondu :
+                    answer = sock.recv(self.TAILLE_BLOC)
+                    answer = answer.decode("ascii")
+                    print(answer)
+                    if answer[0].capitalize() == quest[theme][i][1]:
+                        joueurs[sock][1] +=1
+                        rep_joueur="Bravo !\n"
+                    else:
+                        rep_joueur="Perdu !\n"
+                else :
                     rep_joueur="Temps ecoule !\n"
-                    sock.sendall(rep_joueur.encode("ascii"))
-            print("Tous les joueurs ont repondu")
+                sock.sendall(rep_joueur.encode("ascii"))
+            print("Question suivante")
             count+=1
             
         # Affichage des scores
