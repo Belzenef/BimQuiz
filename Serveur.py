@@ -96,7 +96,7 @@ class Serveur:
                     print("%s est deconnecte :'(" %pseudo)
 
         # Récupération des questions
-        tab = csv.reader(open("questions.csv","r", encoding ="utf-8"), dialect='excel-tab')
+        tab = csv.reader(open("question_quizz.csv","r", encoding ="utf-8"), dialect='excel-tab')
         count = 0
         quest ={}
         for row in tab:
@@ -142,9 +142,8 @@ class Serveur:
 
         # Selection des questions
         nb_quest_theme = [i for i in range(len(quest[theme]))]
-        print(nb_quest_theme)
         index_al = random.sample(nb_quest_theme, nb_quest)
-        print(index_al)
+
 
         # Déroulé du quizz
         count=1
@@ -188,10 +187,31 @@ class Serveur:
             print("Question suivante")
             count+=1
             
-        # Affichage des scores
+
+        # Creation du classement
+        classment = joueurs.items()
+        
+        classement_trie = sorted(classment, key=lambda x: x[1][1])
+        classement_trie.reverse()
+        print(classement_trie)
+        pod = []
+        for i in range(len(classement_trie)):
+            pod.append("%d : %s\n" %(i+1, classement_trie[i][1][0]))
+        
+        
+        # Affichage des scores et du classement final
         for sock in joueurs.keys():
-            score_tot="Bien joue ! Vous avez {0} point(s) !\n0" .format(joueurs[sock][1])
+            if joueurs[sock][1] == 0:
+                score_tot = "Bah alors on a pas reussi a marquer un seul point??\n"
+            else:
+                score_tot="Bien joue ! Vous avez {0} point(s) !\n" .format(joueurs[sock][1])
             sock.sendall(score_tot.encode("ascii"))
+
+            podium = "Classement de la partie :\n"
+            sock.sendall(podium.encode("ascii"))
+            for i in pod:
+                sock.sendall(i.encode("ascii"))
+
 
         # Fin de la partie
         self.partie_en_cours.acquire()
