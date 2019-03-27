@@ -20,8 +20,9 @@ comSocket = socket(AF_INET, SOCK_STREAM)
 comSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
 
 class Client:
-    def __init__(self,ch):
+    def __init__(self,ch,addr):
         # Attributs
+        self.TEMPS_MAX=10 
         self.TAILLE_BLOC=4096 
         self.name = ch
         self.connected=False
@@ -29,7 +30,9 @@ class Client:
         # Connexion au serveur
         print("En attente de connexion ...")
         self.sock = socket(AF_INET, SOCK_STREAM)
-        self.sock.connect(('127.0.0.1',8000))
+        self.sock .setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
+        self.sock .setsockopt(SOL_SOCKET, SO_BROADCAST, 1)
+        self.sock.connect((addr,8000))
         self.sock.sendall(self.name.encode('ascii'))
         self.name = self.sock.recv(self.TAILLE_BLOC).decode('ascii')
         print("Bienvenue, %s ! :) \n" % self.name)
@@ -44,7 +47,7 @@ class Client:
             while self.connected :
                 if inp : # Si le serveur demande une communication
                     print(">")
-                    i, o, e = select.select( [sys.stdin], [], [], 30 )
+                    i, o, e = select.select( [sys.stdin], [], [], self.TEMPS_MAX )
 
                     if self.playing : # client en train de jouer
                         if (i):
@@ -59,30 +62,29 @@ class Client:
                                 self.sock.sendall(line)
                                 inp=self.lire(self.sock)
                         else: # si pas d'activité au bout de 30sec, retour à un etat de lecture
-                            #line="vide".encode('ascii')
-                            #self.sock.sendall(line)
+                            line="none\x00".encode('ascii')
+                            self.sock.sendall(line)
                             inp=self.lire(self.sock)
 
                     else : # nouveau client
                         if (i):
                             line= sys.stdin.readline().strip()
-                            line+="\x00"
-                            if line == "quit\x00" : 
+                            line+="!"
+                            if line == "quit!" : 
                                 print("Fin de la connexion")
                                 self.sock.sendall(line.encode('ascii'))
                                 self.connected=False
-                            elif line == "start\x00" : 
+                            elif line == "start!" : 
                                 self.sock.sendall(line.encode('ascii'))
                                 inp=self.lire(self.sock)
                                 self.playing=True
                             else :
-                                line+="!"
                                 line=line.encode('ascii')
                                 self.sock.sendall(line)
                                 inp=self.lire(self.sock)
                         else: # si pas d'activité au bout de 30sec, retour à un etat de lecture
-                            #line="vide2".encode('ascii')
-                            #self.sock.sendall(line)
+                            line="none!".encode('ascii')
+                            self.sock.sendall(line)
                             inp=self.lire(self.sock)
 
                 else : # si pas de communication attendue, lecture simple du serveur
@@ -103,7 +105,8 @@ class Client:
                 self.playing=True
             elif reponse=='Fin Partie' : # fin de partie
                 self.playing=False
-            elif reponse=='Saisie Attendue' :
+            elif reponse[-1]=='1' :
+                print(reponse[:-1])
                 res=True
             else : 
                 print(reponse)
@@ -114,14 +117,19 @@ class Client:
 
 if __name__ == "__main__":
     #try:
-        if len(sys.argv)>=2 :
+        if len(sys.argv)>=3:
                 ch=sys.argv[1]
+                addr=sys.argv[2]
+        elif len(sys.argv)>=2:
+                ch=sys.argv[1]
+                addr="127.0.0.1"
         else : 
             ch=input('Choisissez un pseudo > ')
+            addr="127.0.0.1"
         while ch=="" :
             print("Desole, ce pseudo n'est pas valide !")
             ch=input('Choisissez un pseudo > ')
-        Client(ch)
+        Client(ch,addr)
     #except KeyboardInterrupt :
         #print("Fin de la connexion au serveur")
     #except:
