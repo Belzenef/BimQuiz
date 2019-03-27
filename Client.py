@@ -22,7 +22,7 @@ comSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
 class Client:
     def __init__(self,ch,addr):
         # Attributs
-        self.TEMPS_MAX=10 
+        self.TEMPS_MAX=30
         self.TAILLE_BLOC=4096 
         self.name = ch
         self.connected=False
@@ -116,7 +116,7 @@ class Client:
         return res
 
 if __name__ == "__main__":
-    #try:
+    try:
         if len(sys.argv)>=3:
                 ch=sys.argv[1]
                 addr=sys.argv[2]
@@ -130,9 +130,9 @@ if __name__ == "__main__":
             print("Desole, ce pseudo n'est pas valide !")
             ch=input('Choisissez un pseudo > ')
         Client(ch,addr)
-    #except KeyboardInterrupt :
-        #print("Fin de la connexion au serveur")
-    #except:
-        #print("Exception inatendue")
-    #finally :
-        #print("Merci d'avoir joue ! ^_^ ")
+    except KeyboardInterrupt :
+        print("Fin de la connexion au serveur")
+    except:
+        print("Exception inatendue")
+    finally :
+        print("Merci d'avoir joue ! ^_^ ")

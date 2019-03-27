@@ -20,13 +20,13 @@ comSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
 class Serveur:
     def __init__(self):
         # Initialisation de la socket serveur
-        self.TEMPS_MAX=10
+        self.TEMPS_MAX=30
         self.TAILLE_BLOC=4096
         self.sock = socket(AF_INET, SOCK_STREAM)
         self.sock .setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
         self.sock .setsockopt(SOL_SOCKET, SO_BROADCAST, 1)
         self.sock.bind(("",8000))
-        self.sock.listen(10)
+        self.sock.listen(26)
 
          # Attributs
         self.partie_en_cours=Value('i', 0)
@@ -84,7 +84,8 @@ class Serveur:
                 else : # message quelconque 
                     reponse="Veuillez patienter..."
                 if nouvJoueur :
-                    self.envoyer(pseudo,reponse)
+                    print("data : ", msg)
+                    self.envoyer(self.connexions[pseudo][0],reponse)
                 else :
                     self.data.put(pseudo)
                     self.data.put(sockClient)
@@ -109,10 +110,11 @@ class Serveur:
             sockJoueur=self.connexions[pseudo][0]
             scoreJoueur=self.connexions[pseudo][1]
             joueurs[pseudo]=[sockJoueur,scoreJoueur]
-            self.envoyer(pseudo,consigne)
-            self.envoyer(pseudo,debut)
+            self.envoyer(joueurs[pseudo][0],consigne)
+            self.envoyer(joueurs[pseudo][0],debut)
             print(pseudo)
         nb_joueurs=len(joueurs)
+        print("Au total, %s joueur(s) sont connectes" % nb_joueurs)
 
         if nb_joueurs==0 :
             self.partie_en_cours.acquire()
@@ -139,31 +141,37 @@ class Serveur:
         choix_theme=random.sample(quest.keys(),3)
         msg="Entrer le theme de votre choix parmis ces trois : %s, %s et %s" %(choix_theme[0],choix_theme[1],choix_theme[2])
         if self.connected(lanceur) :
-            self.demander(lanceur,msg)
+            self.demander(joueurs[lanceur][0],msg)
             succes,pseudo,sock,reponse = self.lire_queue()
+            print(succes)
+            print(reponse)
             if succes :
                 reponse=reponse[:-1].lower()
                 if reponse == "quit" :
                     print("Deconnexion inattendue")
                     self.retirer(joueurs,lanceur)
                     theme = random.sample(quest.keys(),1)[0]
+                    print("Theme aleatoire : ", theme)
                 elif reponse in choix_theme :
                     print("%s a choisi le theme %s " % (pseudo,reponse))
                     theme = reponse
                 else:
                     theme = random.sample(quest.keys(),1)[0]
                     msg="Vous avez fait n'importe quoi alors on vous donne un theme aleatoire : %s" %theme
-                    self.envoyer(lanceur,msg)
+                    self.envoyer(joueurs[lanceur][0],msg)
+                    print("Theme aleatoire : ", theme)
             else :
                 print("Deconnexion inattendue")
                 self.retirer(joueurs,lanceur)
                 theme = random.sample(quest.keys(),1)[0]
+                print("Theme aleatoire : ", theme)
         else :
-            print("else")
             print("Deconnexion inattendue")
             self.retirer(joueurs,lanceur)
             theme = random.sample(quest.keys(),1)[0]
-            print("fin else")
+            print("Theme aleatoire : ", theme)
+        
+        # MAJ du nombre de joueur au cas où le lanceur se deconnecte
         nb_joueurs=len(joueurs)
         if nb_joueurs==0 :
             self.partie_en_cours.acquire()
@@ -176,20 +184,20 @@ class Serveur:
         print("\nChoix du nombre de questions")
         msg="Combien de questions ? (max %d)\n" %len(quest[theme])
         if self.connected(lanceur) :
-            self.demander(lanceur,msg)
+            self.demander(joueurs[lanceur][0],msg)
             succes,pseudo,sock,reponse = self.lire_queue()
             if succes :
-                if reponse == "quit" :
+                if reponse == "quit\x00" :
                     print("Deconnexion inattendue")
                     self.retirer(joueurs,lanceur)
-                    nb_quest=0
+                    nb_quest=3
                 else :
                     try :
                         rep=int(reponse[:-1])
                     except :
                         rep=3
                         msg="Vous avez rentre un nombre incorrect ! Nombre de questions par default : %s" %rep
-                        self.envoyer(lanceur,msg)
+                        self.envoyer(joueurs[lanceur][0],msg)
                         pass
                     if type(rep)==type(2) and rep<=len(quest[theme]) :
                         print("%s a choisi %s questions" % (pseudo,rep))
@@ -197,16 +205,19 @@ class Serveur:
                     else:
                         nb_quest=3
                         msg="Vous avez rentre un nombre incorrect ! Nombre de questions par default : %s" %nb_quest
-                        self.envoyer(lanceur,msg)
+                        self.envoyer(joueurs[lanceur][0],msg)
             else :
                 print("Deconnexion inattendue")
                 self.retirer(joueurs,lanceur)
-                nb_quest=0
+                nb_quest=3
         else :
             print("Deconnexion inattendue")
             self.retirer(joueurs,lanceur)
-            nb_quest=0
+            nb_quest=3
+        print("nb quest ",nb_quest)
         nb_joueurs=len(joueurs)
+        
+        # MAJ du nombre de joueur au cas où le lanceur se deconnecte
         if nb_joueurs==0 :
             self.partie_en_cours.acquire()
             self.partie_en_cours.value=0
@@ -220,17 +231,17 @@ class Serveur:
 
         # Déroulé du quizz
         count=1
-        print("\nLancement du Quizz avec %s joueurs" % nb_joueurs)
+        print("\nLancement du Quizz avec %s joueur(s)" % nb_joueurs)
         for i in index_al : # parcourir la liste de questions
-
             # boucle pour poser la question à tous les joueurs
             for pseudo in joueurs.keys() :
                 V_F="\nQuestion %d de %d: Repondez par Vrai (V) ou Faux (F)" % (count,nb_quest) 
                 votre_rep="\nReponse:"
                 question=quest[theme][i][0][:-1]
-                self.envoyer(pseudo,V_F)
-                self.envoyer(pseudo,question)
-                self.demander(pseudo,votre_rep)
+                if self.connected(pseudo) :
+                    self.envoyer(joueurs[pseudo][0],V_F)
+                    self.envoyer(joueurs[pseudo][0],question)
+                    self.demander(joueurs[pseudo][0],votre_rep)
             print("Question %d posee" % count)
 
             # boucle pour attendre les réponses
@@ -254,6 +265,9 @@ class Serveur:
                     if len(repJoueur)>0 :
                         if repJoueur == "quit" :
                             print("Deconnexion inattendue")
+                        elif repJoueur=="none" :
+                            print("%s n'a pas repondu a temps" % pseudo)
+                            resultat="Temps ecoule !"
                         elif repJoueur[0].capitalize() == quest[theme][i][1]:
                             joueurs[pseudo][1] +=1 # augmentation du score
                             resultat="Bravo !"
@@ -262,28 +276,30 @@ class Serveur:
                     else:
                         print("Reponse invalide de %s" % pseudo)
                         resultat="Reponse invalide !"
-                else :
-                    print("%s n'a pas repondu a temps" % pseudo)
-                    resultat="Temps ecoule !"
                 if self.connected(pseudo) :
-                    self.envoyer(pseudo,resultat)
+                    self.envoyer(joueurs[pseudo][0],resultat)
                     nouvJoueurs[pseudo]=[joueurs[pseudo][0],joueurs[pseudo][1]]
                 else :
                     nb_joueurs-=1
+
+            # MAJ du nombre de joueur au cas où tous les joueurs soient deconnectes
             if nb_joueurs==0 :
                 print("Plus de joueurs en jeu !")
                 break
             print("Scores enregistres")
-            joueurs=nouvJoueurs
+            joueurs=nouvJoueurs.copy()
             count+=1
 
-        # Creation du classement
+        # MAJ du nombre de joueur au cas où le lanceur se deconnecte
+        print("nb joueurs : " , nb_joueurs)
         if nb_joueurs==0 :
             self.partie_en_cours.acquire()
             self.partie_en_cours.value=0
             self.partie_en_cours.release()
             print("Fin de la partie ...\n")
             return 
+
+        # Creation du classement
         print("\nClassement des joueurs")
         classment = joueurs.items()
 
@@ -295,16 +311,17 @@ class Serveur:
 
         # Affichage des scores et du classement final
         for pseudo in joueurs.keys():
-            if joueurs[pseudo][1] == 0:
-                score_tot = "Bah alors on a pas reussi a marquer un seul point??"
-            else:
-                score_tot="Bien joue ! Vous avez {0} point(s) !" .format(joueurs[pseudo][1])
-            self.envoyer(pseudo,score_tot)
-
-            podium = "\nClassement de la partie :"
-            self.envoyer(pseudo,podium)
-            for i in pod:
-                self.envoyer(pseudo,i)
+            if self.connected(pseudo):
+                if joueurs[pseudo][1] == 0:
+                    score_tot = "Bah alors on a pas reussi a marquer un seul point??"
+                else:
+                    score_tot="Bien joue ! Vous avez {0} point(s) !" .format(joueurs[pseudo][1])
+                self.envoyer(joueurs[pseudo][0],score_tot)
+    
+                podium = "\nClassement de la partie :"
+                self.envoyer(joueurs[pseudo][0],podium)
+                for i in pod:
+                    self.envoyer(joueurs[pseudo][0],i)
 
         # Fin de la partie
         self.partie_en_cours.acquire()
@@ -314,33 +331,48 @@ class Serveur:
         rejouer="Que voulez vous faire ?\n"
         fin="Fin Partie"
         for pseudo in joueurs.keys():
-            #connexions.put([pseudo])
-            #connexions.put(sock)
-            self.envoyer(pseudo,merci)
-            self.envoyer(pseudo,fin)
-            self.demander(pseudo,rejouer)
+            if self.connected(pseudo) :
+                self.envoyer(joueurs[pseudo][0],merci)
+                self.envoyer(joueurs[pseudo][0],fin)
+                self.demander(joueurs[pseudo][0],rejouer)
         print("Fin de la partie ...\n")
 
     def connected(self,pseudo):
+        print('test connexion %s : %s' %(pseudo,pseudo in self.connexions))
         return(pseudo in self.connexions)
 
     def retirer(self,joueurs,pseudo):
         try :
-            print("%s ne fait plus partie des joueurs" % pseudo)
             del joueurs[pseudo]
+            print("%s ne fait plus partie des joueurs" % pseudo)
         except :
+            print("%s a deja ete retire" % pseudo)
             pass
 
-    def envoyer(self,pseudo,msg): # envoi d'un message à afficher au client
-        msg=msg.encode('ascii')
-        sock=self.connexions[pseudo][0]
-        sock.send(msg)
+    def envoyer(self,sock,msg): # envoi d'un message à afficher au client
+        res=False
+        try :
+            msg=msg.encode('ascii')
+            #sock=self.connexions[pseudo][0]
+            sock.send(msg)
+            res=True
+        except :
+            res=False
+            pass
+        return res
 
-    def demander(self,pseudo,msg): # envoi d'un message attendant une réponse
-        msg+='1'
-        msg=msg.encode('ascii')
-        sock=self.connexions[pseudo][0]
-        sock.send(msg)
+    def demander(self,sock,msg): # envoi d'un message attendant une réponse
+        res=False
+        try :
+            msg+='1'
+            msg=msg.encode('ascii')
+            #sock=self.connexions[pseudo][0]
+            sock.send(msg)
+            res=True
+        except :
+            res=False
+            pass
+        return res
 
     def lire_queue(self) :
         succes = False
@@ -348,7 +380,7 @@ class Serveur:
             pseudo=self.data.get() # pseudo
             sock=self.data.get() # socket
             reponse=self.data.get() # message
-            succes=reponse!="none"
+            succes=True
         except :
             succes=False
             pass
