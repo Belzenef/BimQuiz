@@ -10,90 +10,111 @@ import traceback
 import csv
 import random
 
+# Pour éviter l'erreur récurente "port already in use" lors des arrets 
+# repetés de vos codes serveurs, utiliser l'option socket suivante: 
+
 comSocket = socket(AF_INET, SOCK_STREAM)
 comSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
 
 
 class Serveur:
     def __init__(self):
-        # Initialisation de la classe """
-        self.TAILLE_BLOC=1024 # la taille des blocs 
+        # Initialisation de la socket serveur
+        self.TAILLE_BLOC=4096 
         self.sock = socket(AF_INET, SOCK_STREAM)
         self.sock.bind(("127.0.0.1",8000))
-        self.sock.listen(5)
-        self.partie_lancee=Value('i', 0)
+        self.sock.listen(10)
+
+         # Attributs
         self.partie_en_cours=Value('i', 0)
-        self.queue = Manager().Queue()
+        self.manager= Manager()
+        self.connexions = self.manager.dict() # clients connectés au serveur
+        self.data = self.manager.Queue() # Queue pour les communications entre processus
+
         print("Lancement du serveur de Quizz")
         self.run()
 
     def run(self):
         while True:
             con, addr = self.sock.accept()
-            process = mp.Process(target=self.handle_conn, args=(con, addr, self.queue))
-            process.daemon = True
+            process = mp.Process(target=self.handle_conn, args=(con,addr))
+            process.daemon = False
             process.start()
-        self.sock.close()
+        self.sock.close() # Fermeture du serveur
         
-    def handle_conn(self, sockClient, addr, queue):
+    def handle_conn(self, sockClient, addrClient):
         connected = True
         #try:
+        # Attribution du pseudo au client et ajout à la liste des connexions
         pseudo = sockClient.recv(self.TAILLE_BLOC)
         pseudo=pseudo.decode("ascii")
-        queue.put(pseudo)
-        queue.put(sockClient)
+        while pseudo in self.connexions.keys() :
+            pseudo+=str(random.randint(1,100))
+        self.connexions[pseudo]=(sockClient,0)
         print("%s a rejoint le serveur" % pseudo)
         sockClient.sendall(pseudo.encode("ascii"))
+
+        # Lancement des communications client/serveur
         while connected:
-            data = sockClient.recv(self.TAILLE_BLOC)
-            data=data.decode('ascii')
-            if not data :
+            msg = sockClient.recv(self.TAILLE_BLOC)
+            msg=msg.decode('ascii')
+            if len(msg)>0 :
+                if msg ==  "quit\x00": # deconnexion côté client
+                    print("%s a quitte le serveur :'(" %pseudo)
+                    connected=False
+                elif msg == "start\x00": # le client lance une partie
+
+                    # Si aucune partie en cours
+                    if self.partie_en_cours.value==0 :
+                        print("Lancement de la partie ...\n")
+                        reponse="Vous avez lance une partie !"
+                        self.envoyer(pseudo,reponse)
+                        self.partie_en_cours.acquire()
+                        self.partie_en_cours.value=1
+                        self.partie_en_cours.release()
+                        game = mp.Process(target=self.partie, args=(pseudo,sockClient))
+                        game.daemon = True
+                        game.start()
+                    # Si une partie a dejà été lancée auparavant
+                    else :
+                        reponse="Une partie est deja en cours, merci de patienter :/"
+                        self.envoyer(pseudo,reponse)
+
+                elif msg[-1]=='!' : # message quelconque d'un client non joueur
+                    print("data : ", msg)
+                    reponse="Veuillez patienter..."
+                    self.envoyer(pseudo,reponse)
+
+                else : # message quelconque d'un joueur, à envoyer au processus partie
+                    self.data.put(pseudo)
+                    self.data.put(sockClient)
+                    self.data.put(msg)
+            else :
                 print("%s est deconnecte :'(" %pseudo)
                 connected=False
-            elif data ==  "quit\x00":
-                print("%s a quitte le serveur :'(" %pseudo)
-                connected=False
-            elif data == "start\x00":
-                if self.partie_en_cours.value==0 :
-                    print("Lancement de la partie ...\n")
-                    response="Vous avez lance une partie !0"
-                    sockClient.sendall(response.encode("ascii"))
-                    self.partie_en_cours.acquire()
-                    self.partie_en_cours.value=1
-                    self.partie_en_cours.release()
-                    self.partie(queue,sockClient)
-                else :
-                    response="Une partie est deja en cours, merci de patienter :/1"
-                    sockClient.sendall(response.encode("ascii"))
         #except:
             #print("Problem in request ?")
         #finally:
+        del self.connexions[pseudo]
         sockClient.close()
 
-    def partie(self, queue, lanceur):
+    def partie(self, lanceur, sockLanceur):
         # Récupération des joueurs connectés
-        queue.put("Done")
-        response="La partie va commencer o/ \nVous avez 30sec pour repondre a chaque question ... \nBonne chance ! \n0"
-        response=response.encode("ascii")
-        joueurs={} # joueurs[sock]=(pseudo,score)
+        # connexions.put("Done")
+        consigne="La partie va commencer o/ \nVous avez 30sec pour repondre a chaque question ... \nBonne chance ! \n"
+        debut="Debut Partie"
+        joueurs={} # joueurs[pseudo]=(socket,score)
         print("Joueurs connectes : ")
-        done=False
-        nb_joueurs=0
-        while not done :
-            msg=queue.get()
-            if msg=="Done" :
-                done=True
-            elif type(msg)==type(" ") :
-                pseudo=msg
-                sock=queue.get()
-                score=0
-                if self.connected(sock) :
-                    sock.send(response)
-                    joueurs[sock]=[pseudo,score]
-                    nb_joueurs+=1
-                    print(pseudo)
-                else : 
-                    print("%s est deconnecte :'(" %pseudo)
+        for pseudo in self.connexions.keys() :
+            sockJoueur=self.connexions[pseudo][0]
+            scoreJoueur=self.connexions[pseudo][1]
+            if self.connected(sockJoueur): # vérification des connexions clients
+                joueurs[pseudo]=[sockJoueur,scoreJoueur]
+                self.envoyer(pseudo,consigne)
+                self.envoyer(pseudo,debut)
+            else :
+                print("%s est deconnecte :'(" %pseudo)
+        nb_joueurs=len(joueurs)
 
         # Récupération des questions
         tab = csv.reader(open("question_quizz.csv","r", encoding ="utf-8"), dialect='excel-tab')
@@ -110,28 +131,34 @@ class Serveur:
 
         # Choix du thème
         choix_theme=random.sample(quest.keys(),3)
-        msg="Entrer le theme de votre choix parmis ces trois : %s, %s et %s1" %(choix_theme[0],choix_theme[1],choix_theme[2])
-        msg=msg.encode("ascii")
-        lanceur.send(msg)
-        rep=lanceur.recv(self.TAILLE_BLOC)
-        rep=rep.decode('ascii')
-        rep = rep[:-1].lower()
-        if rep == choix_theme[0] or rep == choix_theme[1] or rep== choix_theme[2]:
-            theme = rep
-        else:
+        msg="Entrer le theme de votre choix parmis ces trois : %s, %s et %s" %(choix_theme[0],choix_theme[1],choix_theme[2])
+        self.demander(lanceur,msg)
+        try :
+            p=self.data.get() # pseudo
+            s=self.data.get() # socket
+            rep=self.data.get() # message
+            rep=rep[:-1].lower()
+            print("%s a choisi le theme %s " % (p,rep))
+            if rep in choix_theme :
+                theme = rep
+            else:
+                theme = random.sample(quest.keys(),1)[0]
+                msg="Vous avez fait n'importe quoi alors on vous donne un theme aleatoire : %s \n" %theme
+                self.envoyer(lanceur,msg)
+        except :
+            print("queue vide")
             theme = random.sample(quest.keys(),1)[0]
-            msg="Vous avez fait n'importe quoi alors on vous donne un theme aleatoire : %s \n" %theme
-            msg=msg.encode("ascii")
-            lanceur.send(msg)
+            pass
 
         # Choix du nb de questions
-        msg="Combien de questions ? (max %d)\n1" %len(quest[theme])
-        msg=msg.encode("ascii")
-        lanceur.send(msg)
-        rep=lanceur.recv(self.TAILLE_BLOC)
-        rep=rep.decode('ascii')
+        msg="Combien de questions ? (max %d)\n" %len(quest[theme])
+        self.demander(lanceur,msg)
         try :
-            rep=int(rep[:-1]) # try catch pour eviter erreur
+            p=self.data.get() # pseudo
+            s=self.data.get() # socket
+            rep=self.data.get() # message
+            rep=int(rep[:-1])
+            print("%s a choisi %s questions" % (p,rep))
             if type(rep)==type(2) and rep<=len(quest[theme]) :
                 nb_quest=rep
             else:
@@ -144,113 +171,153 @@ class Serveur:
         nb_quest_theme = [i for i in range(len(quest[theme]))]
         index_al = random.sample(nb_quest_theme, nb_quest)
 
-
         # Déroulé du quizz
         count=1
-        for i in index_al:
-            for sock in joueurs.keys():
+        print("nb joueurs : ", nb_joueurs)
+        for i in index_al : # parcourir la liste de questions
+
+            # boucle pour poser la question à tous les joueurs
+            for pseudo in joueurs.keys() :
                 V_F="\nQuestion %d de %d: Repondez par Vrai (V) ou Faux (F)\n" % (count,nb_quest) 
                 votre_rep="\nReponse:1"
                 question=quest[theme][i][0][:-1]
-                sock.send(V_F.encode("ascii"))
-                sock.send(question.encode("ascii"))
-                sock.send(votre_rep.encode("ascii"))  
+                self.envoyer(pseudo,V_F)
+                self.envoyer(pseudo,question)
+                self.demander(pseudo,votre_rep)
             print("Question %d posee" % count)
+
+            # boucle pour attendre les réponses
             t = 0
-            ont_repondu=[]
-            while(len(ont_repondu)<nb_joueurs and t<10) :
+            reponses={}
+            while(len(reponses)<nb_joueurs and t<30) : # temps écoulé ou tous les joueurs répondent
                 debut=time()
                 try:
-                    a_lire, wlist, xlist = select.select(joueurs.keys(),[], [], 10)
-                except select.error:
-                    print("select error")
+                    p=self.data.get() # pseudo
+                    s=self.data.get() # socket
+                    rep=self.data.get() # message
+                    joueurs[p][0]=s
+                    reponses[p]=rep[:-1]
+                    print("%s a repondu %s " % (p,reponses[p]))
+                except :
                     pass
-                else:
-                    # On parcourt la liste des clients à lire
-                    for sock in a_lire: # Client est de type socket
-                        ont_repondu.append(sock)
+#                else:
+#                    for sock in a_lire: # Client est de type socket
+#                        reponses[sock]=sock.recv(self.TAILLE_BLOC)
+#                        print("%s a repondu " % joueurs[sock][0])
                 fin=time()
                 t+=fin-debut
-            for sock in joueurs.keys() :
-                if sock in ont_repondu :
-                    answer = sock.recv(self.TAILLE_BLOC)
-                    answer = answer.decode("ascii")
-                    print(answer)
-                    if answer[0].capitalize() == quest[theme][i][1]:
-                        joueurs[sock][1] +=1
-                        rep_joueur="Bravo !\n"
-                    else:
-                        rep_joueur="Perdu !\n"
-                else :
-                    rep_joueur="Temps ecoule !\n"
-                sock.sendall(rep_joueur.encode("ascii"))
-            print("Question suivante")
-            count+=1
-            
+            print("fin ecoute")
 
-        # Creation du classement
-        classment = joueurs.items()
-        
-        classement_trie = sorted(classment, key=lambda x: x[1][1])
-        classement_trie.reverse()
-        print(classement_trie)
-        pod = []
-        for i in range(len(classement_trie)):
-            pod.append("%d : %s\n" %(i+1, classement_trie[i][1][0]))
-        
-        
+            nouvJoueurs={} # MAJ des joueurs en cas de déconnexion imprévue
+            for pseudo in joueurs.keys() :
+                if pseudo in reponses :
+                    repJoueur = reponses[pseudo]
+                    if len(repJoueur)>0 :
+                        if repJoueur[0].capitalize() == quest[theme][i][1]:
+                            joueurs[pseudo][1] +=1 # augmentation du score
+                            resultat="Bravo !\n"
+                            print("bien rep")
+                        else:
+                            resultat="Perdu !\n"
+                            print("perdi")
+                    else:
+                        resultat="Reponse invalide !\n"
+                        print("erreur reponse")
+                else :
+                    print("%s n'a pas repondu a temps" % pseudo)
+                    resultat="Temps ecoule !\n"
+                if self.connected(joueurs[pseudo][0]) :
+                    self.envoyer(pseudo,resultat)
+                    nouvJoueurs[pseudo]=[joueurs[pseudo][0],joueurs[pseudo][1]]
+                else : 
+                    print("%s est deconnecte :'(" % pseudo)
+                    nb_joueurs-=1
+            print("Scores enregistres")
+            joueurs=nouvJoueurs
+            count+=1
+
+#        # Creation du classement
+#        classment = joueurs.keys()
+#        
+#        classement_trie = sorted(classment, key=lambda x: x[1][1])
+#        classement_trie.reverse()
+#        pod = []
+#        for i in range(len(classement_trie)):
+#            pod.append("%d : %s\n" %(i+1, classement_trie[i][1][0]))
+
         # Affichage des scores et du classement final
-        for sock in joueurs.keys():
-            if joueurs[sock][1] == 0:
+        for pseudo in joueurs.keys():
+            if joueurs[pseudo][1] == 0:
                 score_tot = "Bah alors on a pas reussi a marquer un seul point??\n"
             else:
-                score_tot="Bien joue ! Vous avez {0} point(s) !\n" .format(joueurs[sock][1])
-            sock.sendall(score_tot.encode("ascii"))
-
-            podium = "Classement de la partie :\n"
-            sock.sendall(podium.encode("ascii"))
-            for i in pod:
-                sock.sendall(i.encode("ascii"))
-
+                score_tot="Bien joue ! Vous avez {0} point(s) !\n" .format(joueurs[pseudo][1])
+            self.envoyer(pseudo,score_tot)
+#
+#            podium = "Classement de la partie :\n"
+#            sock.sendall(podium.encode("ascii"))
+#            for i in pod:
+#                sock.sendall(i.encode("ascii"))
 
         # Fin de la partie
         self.partie_en_cours.acquire()
         self.partie_en_cours.value=0
         self.partie_en_cours.release()
-        response="Merci d'avoir joue ;)\n1"
-        response=response.encode("ascii")
-        for sock in joueurs.keys():
-            queue.put(joueurs[sock][0])
-            queue.put(sock)
-            sock.send(response)
+        merci="Merci d'avoir joue ;)\n"
+        rejouer="Que voulez vous faire ?\n"
+        fin="Fin Partie"
+        for pseudo in joueurs.keys():
+            #connexions.put([pseudo])
+            #connexions.put(sock)
+            self.envoyer(pseudo,merci)
+            self.envoyer(pseudo,fin)
+            self.demander(pseudo,rejouer)
         print("Fin de la partie ...\n")
 
     def connected(self,sock):
-        res=False
-        ch="test3"
-        ch=ch.encode('ascii')
-        sock.send(ch)
-        data = sock.recv(self.TAILLE_BLOC).decode('ascii')
-        if data=="test" :
-            res=True
-        return(res)  
+        res=True
+#        ch="test3"
+#        ch=ch.encode('ascii')
+#        try :
+#            sock.send(ch)
+#            print("recv ... vas-t-il aboutir ?")
+#            ready = select.select([sock], [], [], 5)
+#            if ready[0]:
+#                msg = sock.recv(self.TAILLE_BLOC).decode('ascii')
+#                print("yes ! ")
+#                print(msg)
+#                if msg=="test" :
+#                    res=True
+#                else : 
+#                    res=False
+#        except :
+#            sock.send("echec".encode('ascii'))
+#            print("dgfjkdsjglkrs")
+        return(res)
+        
+    def envoyer(self,pseudo,msg): # envoi d'un message à afficher au client
+        msg=msg.encode('ascii')
+        sock=self.connexions[pseudo][0]
+        sock.send(msg)
+
+    def demander(self,pseudo,msg): # envoi d'un message attendant une réponse
+        msg=msg.encode('ascii')
+        sock=self.connexions[pseudo][0]
+        sock.send(msg)
+        msg='Saisie Attendue'.encode('ascii')
+        sock.send(msg)
+        
  
 if __name__ == "__main__":
-        try:
-            Serveur()
-        except KeyboardInterrupt :
-            print("Fermeture du serveur")
-        except:
-            print("Exception inattendue")
-        finally:
-            for process in mp.active_children():
-                print("Fermeture du processus ", process)
-                process.terminate()
-                process.join()
-            print("FIN")
-
-
-# https://pytorch.org/docs/stable/notes/multiprocessing.html
-#https://realpython.com/python-sockets/
-#https://github.com/JustinTulloss/zeromq.node/issues/163
-#https://bugs.python.org/issue4892
+        Serveur()
+#        try:
+#            Serveur()
+#        except KeyboardInterrupt :
+#            print("Fermeture du serveur")
+#        except:
+#            print("Exception inattendue")
+#        finally:
+#            for process in mp.active_children():
+#                print("Fermeture du processus ", process)
+#                process.terminate()
+#                process.join()
+#            print("FIN")

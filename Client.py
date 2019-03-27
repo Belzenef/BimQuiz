@@ -22,46 +22,73 @@ comSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
 class Client:
     def __init__(self,ch):
         # Attributs
+        self.TAILLE_BLOC=4096 
         self.name = ch
         self.connected=False
+        
+        # Connexion au serveur
         print("En attente de connexion ...")
         self.sock = socket(AF_INET, SOCK_STREAM)
         self.sock.connect(('127.0.0.1',8000))
         self.sock.sendall(self.name.encode('ascii'))
-        response = self.sock.recv(1024).decode('ascii')
-        print("Bienvenue, %s ! :) \n" % response)
+        self.name = self.sock.recv(self.TAILLE_BLOC).decode('ascii')
+        print("Bienvenue, %s ! :) \n" % self.name)
         print("Tapez 'start' pour lancer une partie")
         print("Tapez 'wait' pour attendre vos amis")
         print("Tapez 'quit' pour quiter le jeu")
+
         self.connected=True
-        inp='1'
+        self.playing=False # le client connecté n'est pas encore dans une partie
+        inp=True # bool permettant de demander à l'utilisateur de saisir au clavier
         try :
             while self.connected :
-                if inp=='1' :
+                if inp : # Si le serveur demande une communication
                     print(">")
-                    i, o, e = select.select( [sys.stdin], [], [], 10 )
-                    if (i):
-                        line= sys.stdin.readline().strip()
-                        line+="\x00"
-                        if line == "quit\x00" : 
-                            print("Fin de la connexion")
-                            self.sock.sendall(line.encode('ascii'))
-                            self.connected=False
-                        elif line == "wait\x00" :
+                    i, o, e = select.select( [sys.stdin], [], [], 30 )
+
+                    if self.playing : # client en train de jouer
+                        if (i):
+                            line= sys.stdin.readline().strip()
+                            line+="\x00"
+                            if line == "quit\x00" : 
+                                print("Fin de la connexion")
+                                self.sock.sendall(line.encode('ascii'))
+                                self.connected=False
+                            else :
+                                line=line.encode('ascii')
+                                self.sock.sendall(line)
+                                inp=self.lire(self.sock)
+                        else: # si pas d'activité au bout de 30sec, retour à un etat de lecture
+                            #line="vide".encode('ascii')
+                            #self.sock.sendall(line)
                             inp=self.lire(self.sock)
-                        elif line == "start\x00" :
-                            line=line.encode('ascii')
-                            self.sock.sendall(line)
+
+                    else : # nouveau client
+                        if (i):
+                            line= sys.stdin.readline().strip()
+                            line+="\x00"
+                            if line == "quit\x00" : 
+                                print("Fin de la connexion")
+                                self.sock.sendall(line.encode('ascii'))
+                                self.connected=False
+                            elif line == "start\x00" : 
+                                self.sock.sendall(line.encode('ascii'))
+                                inp=self.lire(self.sock)
+                                self.playing=True
+                            else :
+                                line+="!"
+                                line=line.encode('ascii')
+                                self.sock.sendall(line)
+                                inp=self.lire(self.sock)
+                        else: # si pas d'activité au bout de 30sec, retour à un etat de lecture
+                            #line="vide2".encode('ascii')
+                            #self.sock.sendall(line)
                             inp=self.lire(self.sock)
-                        else :
-                            line=line.encode('ascii')
-                            self.sock.sendall(line)
-                            inp=self.lire(self.sock)
-                    else:
-                        inp=self.lire(self.sock)
-                else : 
+
+                else : # si pas de communication attendue, lecture simple du serveur
                     inp=self.lire(self.sock)
-        except KeyboardInterrupt :
+
+        except KeyboardInterrupt : # interruption clavier côté client
             print("Fin de la connexion")
             line = "quit\x00"
             self.sock.sendall(line.encode('ascii'))
@@ -69,22 +96,24 @@ class Client:
             self.sock.close()
 
     def lire(self,sock):
-        res = '0' # entier (0 si pas de réponse attendue, 1 si réponse attendue, 3 si test connexion)
-        response = sock.recv(1024).decode('ascii')
-        if not response : 
+        reponse = sock.recv(self.TAILLE_BLOC).decode('ascii')
+        res=False
+        if len(reponse)>0 :
+            if reponse=='Debut Partie' : # debut de partie
+                self.playing=True
+            elif reponse=='Fin Partie' : # fin de partie
+                self.playing=False
+            elif reponse=='Saisie Attendue' :
+                res=True
+            else : 
+                print(reponse)
+        else :
             print("Le serveur a ete deconnecte")
             self.connected=False
-        else :
-            res=response[-1]
-            if res=='3' :
-                sock.send(response[:-1].encode('ascii'))
-                res='0'
-            else :
-                print(response[:-1])
         return res
 
 if __name__ == "__main__":
-    try:
+    #try:
         if len(sys.argv)>=2 :
                 ch=sys.argv[1]
         else : 
@@ -93,9 +122,9 @@ if __name__ == "__main__":
             print("Desole, ce pseudo n'est pas valide !")
             ch=input('Choisissez un pseudo > ')
         Client(ch)
-    except KeyboardInterrupt :
-        print("Fin de la connexion au serveur")
-    except:
-        print("Exception inatendue")
-    finally :
-        print("Merci d'avoir joue ! ^_^ ")
+    #except KeyboardInterrupt :
+        #print("Fin de la connexion au serveur")
+    #except:
+        #print("Exception inatendue")
+    #finally :
+        #print("Merci d'avoir joue ! ^_^ ")
