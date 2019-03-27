@@ -304,7 +304,7 @@ class Serveur:
             classement_trie.reverse()
             pod = []
             for i in range(len(classement_trie)):
-                pod.append("%d : %s" %(i+1, classement_trie[i][0]))
+                pod.append("%d : %s avec %d point(s)" %(i+1, classement_trie[i][0], classement_trie[i][1]))
     
             # Affichage des scores et du classement final
             for pseudo in joueurs.keys():
