@@ -121,13 +121,13 @@ class Serveur:
             count = 0
             quest ={}
             for row in tab:
-                if count ==0:
-                    quest[row[0]] = [] 
-                quest[row[0]].append([row[1],row[2]])
-                count +=1
-                
-                if count == 10:
-                    count =0
+                if row[0] in quest.keys():
+                    quest[row[0]].append([row[1],row[2]])
+                    
+                else:
+                    quest[row[0]] = []
+                    quest[row[0]].append([row[1],row[2]])
+
 
             # Choix du thème
             print("\nChoix du theme")
