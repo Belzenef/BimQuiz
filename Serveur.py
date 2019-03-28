@@ -213,7 +213,8 @@ class Serveur:
             # Selection des questions
             nb_quest_theme = [i for i in range(len(quest[theme]))]
             index_al = random.sample(nb_quest_theme, nb_quest)
-            print(quest['4bim'])
+            
+            
             # Déroulé du quizz
             count=1
             print("\nLancement du Quizz avec %s joueur(s)" % nb_joueurs)
@@ -259,9 +260,7 @@ class Serveur:
                                 joueurs[pseudo] +=1 # augmentation du score
                                 resultat="Bravo o/"
                             else:
-                                if joueurs[pseudo] > 0:
-                                    joueurs[pseudo] -=0.5
-
+                                joueurs[pseudo] -=0.5
                                 resultat="Perdu :/"
                         else:
                             print("Reponse invalide de %s" % pseudo)
