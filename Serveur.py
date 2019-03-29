@@ -136,237 +136,231 @@ class Serveur:
 
         :raises: Deconnexion inattendue
         """
-        try :
-            # Récupération des joueurs connectés
-            # connexions.put("Done")
-            consigne="La partie va commencer o/ \nVous avez 30sec pour repondre a chaque question ... \nBonne chance :) \n"
-            debut="Debut Partie"
-            fin=False
-            joueurs={} # joueurs[pseudo]=score
-            print("Joueurs connectes : ")
-            for pseudo in self.connexions.keys() :
-                scoreJoueur=0
-                joueurs[pseudo]=scoreJoueur
-                self.envoyer(pseudo,consigne)
-                self.envoyer(pseudo,debut)
-                print(pseudo)
-            nb_joueurs=len(joueurs)
-            print("Au total, %s joueur(s) sont connectes" % nb_joueurs)
-    
-            # Récupération des questions
-            tab = csv.reader(open("question_quizz.csv","r", encoding ="utf-8"), dialect='excel-tab')
-            count = 0
-            quest ={}
-            for row in tab:
-                if count ==0:
-                    quest[row[0]] = [] 
-                quest[row[0]].append([row[1],row[2]])
-                count +=1
-                
-                if count == 10:
-                    count =0
+        # Récupération des joueurs connectés
+        # connexions.put("Done")
+        consigne="La partie va commencer o/ \nVous avez 30sec pour repondre a chaque question ... \nBonne chance :) \n"
+        debut="Debut Partie"
+        fin=False
+        joueurs={} # joueurs[pseudo]=score
+        print("Joueurs connectes : ")
+        for pseudo in self.connexions.keys() :
+            scoreJoueur=0
+            joueurs[pseudo]=scoreJoueur
+            self.envoyer(pseudo,consigne)
+            self.envoyer(pseudo,debut)
+            print(pseudo)
+        nb_joueurs=len(joueurs)
+        print("Au total, %s joueur(s) sont connectes" % nb_joueurs)
 
-            # Choix du thème
-            print("\nChoix du theme")
-            choix_theme=random.sample(quest.keys(),3)
-            msg="Entrer le theme de votre choix parmis ces trois : %s, %s et %s" %(choix_theme[0],choix_theme[1],choix_theme[2])
-            if lanceur in self.connexions :
-                self.demander(lanceur,msg)
-                succes,pseudo,reponse = self.lire_queue()
-                print(succes)
-                print(reponse)
-                if succes :
-                    reponse=reponse[:-1].lower()
-                    if reponse == "quit" :
-                        print("Deconnexion inattendue")
-                        del joueurs[lanceur]
-                        fin=True
-                    elif reponse in choix_theme :
-                        print("%s a choisi le theme %s " % (pseudo,reponse))
-                        theme = reponse
-                    else:
-                        theme = random.sample(quest.keys(),1)[0]
-                        msg="Vous avez fait n'importe quoi alors on vous donne un theme aleatoire : %s" %theme
-                        self.envoyer(lanceur,msg)
-                        print("Theme aleatoire : ", theme)
-                else :
+        # Récupération des questions
+        tab = csv.reader(open("question_quizz.csv","r", encoding ="utf-8"), dialect='excel-tab')
+        count = 0
+        quest ={}
+        for row in tab:
+            if row[0] in quest.keys():
+                quest[row[0]].append([row[1],row[2]])
+                
+            else:
+                quest[row[0]] = []
+                quest[row[0]].append([row[1],row[2]])
+
+
+        # Choix du thème
+        print("\nChoix du theme")
+        choix_theme=random.sample(quest.keys(),3)
+        msg="Entrer le theme de votre choix parmis ces trois : %s, %s et %s" %(choix_theme[0],choix_theme[1],choix_theme[2])
+        if lanceur in self.connexions :
+            self.demander(lanceur,msg)
+            succes,pseudo,reponse = self.lire_queue()
+            print(succes)
+            print(reponse)
+            if succes :
+                reponse=reponse[:-1].lower()
+                if reponse == "quit" :
                     print("Deconnexion inattendue")
                     del joueurs[lanceur]
                     fin=True
-            else :
-                print("Deconnexion inattendue")
-                del joueurs[lanceur]
-                fin=True # si le lanceur se deconnecte, la partie est terminee
-    
-            # Au cas où le lanceur se deconnecte
-            if fin :
-                msg="\nLe lanceur a ete deconnecte :/"
-                self.fin_partie(joueurs,msg)
-                print("Fin de la partie ...\n")
-                return 
-    
-            # Choix du nb de questions
-            print("\nChoix du nombre de questions")
-            msg="Combien de questions ? (max %d)\n" %len(quest[theme])
-            if lanceur in self.connexions :
-                self.demander(lanceur,msg)
-                succes,pseudo,reponse = self.lire_queue()
-                if succes :
-                    if reponse == "quit\x00" :
-                        print("Deconnexion inattendue")
-                        del joueurs[lanceur]
-                        fin=True
-                    else :
-                        try :
-                            rep=int(reponse[:-1])
-                        except :
-                            rep=3
-                            msg="Vous avez rentre un nombre incorrect ! Nombre de questions par default : %s" %rep
-                            self.envoyer(lanceur,msg)
-                            pass
-                        if type(rep)==type(2) and rep<=len(quest[theme]) :
-                            print("%s a choisi %s questions" % (pseudo,rep))
-                            nb_quest=rep
-                        else:
-                            nb_quest=3
-                            msg="Vous avez rentre un nombre incorrect ! Nombre de questions par default : %s" %nb_quest
-                            self.envoyer(lanceur,msg)
-                else :
-                    print("Deconnexion inattendue")
-                    del joueurs[lanceur]
-                    fin=True
+                elif reponse in choix_theme :
+                    print("%s a choisi le theme %s " % (pseudo,reponse))
+                    theme = reponse
+                else:
+                    theme = random.sample(quest.keys(),1)[0]
+                    msg="Vous avez fait n'importe quoi alors on vous donne un theme aleatoire : %s" %theme
+                    self.envoyer(lanceur,msg)
+                    print("Theme aleatoire : ", theme)
             else :
                 print("Deconnexion inattendue")
                 del joueurs[lanceur]
                 fin=True
-    
-            # Au cas où le lanceur se deconnecte
-            if fin :
-                msg="\nLe lanceur a ete deconnecte :/"
-                self.fin_partie(joueurs,msg)
-                print("Fin de la partie ...\n")
-                return 
-    
-            # Selection des questions
-            nb_quest_theme = [i for i in range(len(quest[theme]))]
-            index_al = random.sample(nb_quest_theme, nb_quest)
-    
-            # Déroulé du quizz
-            count=1
-            print("\nLancement du Quizz avec %s joueur(s)" % nb_joueurs)
-            for i in index_al : # parcourir la liste de questions
-                # boucle pour poser la question à tous les joueurs
-                for pseudo in joueurs.keys() :
-                    V_F="\nQuestion %d de %d: Repondez par Vrai (V) ou Faux (F)" % (count,nb_quest) 
-                    votre_rep="\nReponse:"
-                    question=quest[theme][i][0][:-1]
-                    self.envoyer(pseudo,V_F)
-                    self.envoyer(pseudo,question)
-                    self.demander(pseudo,votre_rep)
-                print("Question %d posee" % count)
-    
-                # boucle pour attendre les réponses
-                t = 0
-                reponses={}
-                debut=time()
-                while(len(reponses)<nb_joueurs and t<self.TEMPS_MAX) : # temps écoulé ou tous les joueurs répondent
-                    succes,pseudo,reponse = self.lire_queue()
-                    if succes :
-                        reponses[pseudo]=reponse[:-1]
-                        if reponses[pseudo]!="quit" :
-                            print("%s a repondu %s " % (pseudo,reponses[pseudo]))
-                    else :
-                        print("Deconnexion inattendue")
-    
-                nouvJoueurs={} # MAJ des joueurs en cas de déconnexion imprévue
-                for pseudo in joueurs.keys() :
-                    if pseudo in reponses :
-                        repJoueur = reponses[pseudo]
-                        if len(repJoueur)>0 :
-                            if repJoueur == "quit" :
-                                print("Deconnexion inattendue")
-                                if pseudo==lanceur :
-                                    del joueurs[lanceur]
-                                    fin=True
-                                    break
-                            elif repJoueur=="none" :
-                                print("%s n'a pas repondu a temps" % pseudo)
-                                resultat="Temps ecoule :'("
-                            elif repJoueur[0].capitalize() == quest[theme][i][1]:
-                                joueurs[pseudo] +=1 # augmentation du score
-                                resultat="Bravo o/"
-                            else:
-                                resultat="Perdu :/"
-                        else:
-                            print("Reponse invalide de %s" % pseudo)
-                            resultat="Reponse invalide"
-                    if pseudo in self.connexions :
-                        self.envoyer(pseudo,resultat)
-                        nouvJoueurs[pseudo]=joueurs[pseudo]
-                    elif pseudo==lanceur :
-                        del joueurs[lanceur]
-                        fin=True
-                        break
-                    else :
-                        nb_joueurs-=1
-    
-                # MAJ du nombre de joueur au cas où tous les joueurs soient deconnectes
-                if nb_joueurs==0 :
-                    msg="\nPlus de joueurs en jeu ! "
-                    self.fin_partie(joueurs,msg)
-                    print("Fin de la partie ...\n")
-                    return 
-                # Au cas où le lanceur se deconnecte
-                elif fin :
-                    msg="\nLe lanceur a ete deconnecte :/"
-                    self.fin_partie(joueurs,msg)
-                    print("Fin de la partie ...\n")
-                    return 
+        else :
+            print("Deconnexion inattendue")
+            del joueurs[lanceur]
+            fin=True # si le lanceur se deconnecte, la partie est terminee
+
+        # Au cas où le lanceur se deconnecte
+        if fin :
+            msg="\nLe lanceur a ete deconnecte :/"
+            self.fin_partie(joueurs,msg)
+            print("Fin de la partie ...\n")
+            return 
+
+        # Choix du nb de questions
+        print("\nChoix du nombre de questions")
+        msg="Combien de questions ? (max %d)\n" %len(quest[theme])
+        if lanceur in self.connexions :
+            self.demander(lanceur,msg)
+            succes,pseudo,reponse = self.lire_queue()
+            if succes :
+                if reponse == "quit\x00" :
+                    print("Deconnexion inattendue")
+                    del joueurs[lanceur]
+                    fin=True
                 else :
-                    joueurs=nouvJoueurs.copy()
-                    count+=1
-    
+                    try :
+                        rep=int(reponse[:-1])
+                    except :
+                        rep=3
+                        msg="Vous avez rentre un nombre incorrect ! Nombre de questions par default : %s" %rep
+                        self.envoyer(lanceur,msg)
+                        pass
+                    if type(rep)==type(2) and rep<=len(quest[theme]) :
+                        print("%s a choisi %s questions" % (pseudo,rep))
+                        nb_quest=rep
+                    else:
+                        nb_quest=3
+                        msg="Vous avez rentre un nombre incorrect ! Nombre de questions par default : %s" %nb_quest
+                        self.envoyer(lanceur,msg)
+            else :
+                print("Deconnexion inattendue")
+                del joueurs[lanceur]
+                fin=True
+        else :
+            print("Deconnexion inattendue")
+            del joueurs[lanceur]
+            fin=True
+
+        # Au cas où le lanceur se deconnecte
+        if fin :
+            msg="\nLe lanceur a ete deconnecte :/"
+            self.fin_partie(joueurs,msg)
+            print("Fin de la partie ...\n")
+            return 
+
+        # Selection des questions
+        nb_quest_theme = [i for i in range(len(quest[theme]))]
+        index_al = random.sample(nb_quest_theme, nb_quest)
+        
+        
+        # Déroulé du quizz
+        count=1
+        print("\nLancement du Quizz avec %s joueur(s)" % nb_joueurs)
+        for i in index_al : # parcourir la liste de questions
+            # boucle pour poser la question à tous les joueurs
+            for pseudo in joueurs.keys() :
+                V_F="\nQuestion %d de %d: Repondez par Vrai (V) ou Faux (F)" % (count,nb_quest) 
+                votre_rep="\nReponse:"
+                question=quest[theme][i][0][:-1]
+                self.envoyer(pseudo,V_F)
+                self.envoyer(pseudo,question)
+                self.demander(pseudo,votre_rep)
+            print("Question %d posee" % count)
+
+            # boucle pour attendre les réponses
+            t = 0
+            reponses={}
+            debut=time()
+            while(len(reponses)<nb_joueurs and t<self.TEMPS_MAX) : # temps écoulé ou tous les joueurs répondent
+                succes,pseudo,reponse = self.lire_queue()
+                if succes :
+                    reponses[pseudo]=reponse[:-1]
+                    if reponses[pseudo]!="quit" :
+                        print("%s a repondu %s " % (pseudo,reponses[pseudo]))
+                else :
+                    print("Deconnexion inattendue")
+
+            nouvJoueurs={} # MAJ des joueurs en cas de déconnexion imprévue
+            for pseudo in joueurs.keys() :
+                if pseudo in reponses :
+                    repJoueur = reponses[pseudo]
+                    if len(repJoueur)>0 :
+                        if repJoueur == "quit" :
+                            print("Deconnexion inattendue")
+                            if pseudo==lanceur :
+                                del joueurs[lanceur]
+                                fin=True
+                                break
+                        elif repJoueur=="none" :
+                            print("%s n'a pas repondu a temps" % pseudo)
+                            resultat="Temps ecoule :'("
+                        elif repJoueur[0].capitalize() == quest[theme][i][1]:
+                            joueurs[pseudo] +=1 # augmentation du score
+                            resultat="Bravo o/"
+                        else:
+                            joueurs[pseudo] -=0.5
+                            resultat="Perdu :/"
+                    else:
+                        print("Reponse invalide de %s" % pseudo)
+                        resultat="Reponse invalide"
+                if pseudo in self.connexions :
+                    self.envoyer(pseudo,resultat)
+                    nouvJoueurs[pseudo]=joueurs[pseudo]
+                elif pseudo==lanceur :
+                    del joueurs[lanceur]
+                    fin=True
+                    break
+                else :
+                    nb_joueurs-=1
+
+            # MAJ du nombre de joueur au cas où tous les joueurs soient deconnectes
+            if nb_joueurs==0 :
+                msg="\nPlus de joueurs en jeu ! "
+                self.fin_partie(joueurs,msg)
+                print("Fin de la partie ...\n")
+                return 
             # Au cas où le lanceur se deconnecte
-            if fin :
+            elif fin :
                 msg="\nLe lanceur a ete deconnecte :/"
                 self.fin_partie(joueurs,msg)
                 print("Fin de la partie ...\n")
                 return 
-    
-            # Creation du classement
-            print("\nClassement des joueurs")
-            classment = joueurs.items()
-    
-            classement_trie = sorted(classment, key=lambda x: x[1])
-            classement_trie.reverse()
-            pod = []
-            for i in range(len(classement_trie)):
-                pod.append("%d : %s" %(i+1, classement_trie[i][0]))
-    
-            # Affichage des scores et du classement final
-            for pseudo in joueurs.keys():
-                if joueurs[pseudo] == 0:
-                    score_tot = "Bah alors on a pas reussi a marquer un seul point??"
-                else:
-                    score_tot="Bien joue ! Vous avez {0} point(s)." .format(joueurs[pseudo])
-                self.envoyer(pseudo,score_tot)
-    
-                podium = "\nClassement de la partie :"
-                self.envoyer(pseudo,podium)
-                for i in pod:
-                    self.envoyer(pseudo,i)
-    
-            # Fin de la partie
-            msg="\nMerci d'avoir joue ! :)"
+            else :
+                joueurs=nouvJoueurs.copy()
+                count+=1
+
+        # Au cas où le lanceur se deconnecte
+        if fin :
+            msg="\nLe lanceur a ete deconnecte :/"
             self.fin_partie(joueurs,msg)
             print("Fin de la partie ...\n")
-        except :
-            print("Erreur dans la partie")
-        finally :
-            msg="\nMerci d'avoir joue ! :)"
-            self.fin_partie(joueurs,msg)
-            print("Fin de la partie ...\n")
-        
+            return 
+
+        # Creation du classement
+        print("\nClassement des joueurs")
+        classment = joueurs.items()
+
+        classement_trie = sorted(classment, key=lambda x: x[1])
+        classement_trie.reverse()
+        pod = []
+        for i in range(len(classement_trie)):
+            pod.append("%d : %s avec %.1f point(s)" %(i+1, classement_trie[i][0], classement_trie[i][1]))
+
+        # Affichage des scores et du classement final
+        for pseudo in joueurs.keys():
+            if joueurs[pseudo] == 0:
+                score_tot = "Bah alors on a pas reussi a marquer un seul point??"
+            else:
+                score_tot="Bien joue ! Vous avez {0} point(s)." .format(joueurs[pseudo])
+            self.envoyer(pseudo,score_tot)
+
+            podium = "\nClassement de la partie :"
+            self.envoyer(pseudo,podium)
+            for i in pod:
+                self.envoyer(pseudo,i)
+
+        # Fin de la partie
+        msg="\nMerci d'avoir joue ! :)"
+        self.fin_partie(joueurs,msg)
+        print("Fin de la partie ...\n")
 
     def retirer(self,joueurs,pseudo):
         """Retire un joueur du dictionnaire en cas de déconnexion

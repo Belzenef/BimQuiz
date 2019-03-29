@@ -108,16 +108,16 @@ expressions	Quelqu'un qui swigne dans le beurre danse mal.0	F
 expressions	Frapper son Waterloo signifie connaitre un echec.0	V
 expressions	Pelleter des nuages c'est rever sans tenir compte des contraintes reelles.0	V
 expressions	Etre une grosse bolle c'est etre naif.0	F
-autsralie	L'ornithorynque s'oriente avec son bec.0	V
-autsralie	Les baobabs poussent dans les regions semi-desertiques de l'Australie.0	F
-autsralie	Environ 1500 especes de poissons et crustaces vivent dans la Grande Barriere de corail.0	V
-autsralie	La raie manta peut avaler un thon adulte d'une seule bouchee.0	F
-autsralie	L'oiseau-lyre imite une vingtaine d'autres oiseaux.0	V
-autsralie	Le tigre de Tasmanie s'est eteint en 1936.0	V
-autsralie	Les crocodiles marins attrapent parfois des kangourous.0	V
-autsralie	On trouve des dromadaires en liberte en Australie.0	V
-autsralie	Durant la couvaison l'emeu dort beaucoup.0	F
-autsralie	Le python tapis peut chasser dans le noir complet.0	V
+australie	L'ornithorynque s'oriente avec son bec.0	V
+australie	Les baobabs poussent dans les regions semi-desertiques de l'Australie.0	F
+australie	Environ 1500 especes de poissons et crustaces vivent dans la Grande Barriere de corail.0	V
+australie	La raie manta peut avaler un thon adulte d'une seule bouchee.0	F
+australie	L'oiseau-lyre imite une vingtaine d'autres oiseaux.0	V
+australie	Le tigre de Tasmanie s'est eteint en 1936.0	V
+australie	Les crocodiles marins attrapent parfois des kangourous.0	V
+australie	On trouve des dromadaires en liberte en Australie.0	V
+australie	Durant la couvaison l'emeu dort beaucoup.0	F
+australie	Le python tapis peut chasser dans le noir complet.0	V
 fleurs	Le trefle fleuri est le symbole de l'ecosse.0	F
 fleurs	Il existe environ 15 especes d'impatientes.0	F
 fleurs	Chaque annee les roses fleurissent avant les lilas.0	F
@@ -138,3 +138,68 @@ bebe	Dans l'uterus le bebe percoit faiblement les battements de coeur de sa mere
 bebe	Les bebes commencent a se reconnaitre dans le miroir vers l'age de 18 mois.0	V
 bebe	Les bebes ont une peur innee des predateurs tels que les loups.0	F
 bebe	Il y a une naissance toutes les 30 secondes dans le monde.0	F
+pays	Le japon est un archipel qui comprend plus de 6800 iles.0	V
+pays	La muraille de Chine protegeait la Chine de la Russie.0	F
+pays	Le Burj Khalifa, l'edifice le plus haut du monde, se trouve a Abu Dhabi.0	F
+pays	L'anglais est la langue maternelle la plus parlee de l'Union europeenne.0	F
+pays	La Chine a 14 pays voisins.0	V
+pays	C'est en Egypte que l'on trouve le plus grand nombre de pyramides.0	F
+pays	La Nouvelle-Zelande est a 1000 km au nord de l'Australie.0	F
+pays	En 1970, la population mondiale etait la moitie de ce qu'elle est d'aujourd'hui.0	V
+pays	L'Ecosse s'appelle ‘Eire' en langue celtique.0	F
+pays	Madagascar est un pays insulaire situe a l'est de l'Afrique.0	V
+oceans	Il existe des forets d'algues geantes dans les oceans.0	V
+oceans	Sans le Gulf Stream, Londres serait glaciale en hiver.0	V
+oceans	La majorite des coraux se trouve dans l'ocean Indien.0	F
+oceans	Les oceans couvrent 45 pourcent de la planete.0	F
+oceans	L'ocean Pacifique couvre environ un tiers de la planete.0	V
+oceans	Il existe un requin trois fois plus gros qu'un elephant.0	V
+oceans	Le son se propage trois fois moins vite dans l'ocean qu'a l'air libre.0	F
+oceans	On trouve plus de 25 000 iles dans l'ocean Pacifique.0	V
+oceans	La Grande Barriere de corail est visible de l'espace.0	V
+oceans	Les epaulards sont les plus gros animaux a chasser en groupes.0	V
+vaccins	Les vaccins sont efficaces a 100 pourcent.0	F
+vaccins	Les infections contractees naturellement protegent mieux que les vaccins.0	F
+vaccins	Le vaccin contre le tetanos dure toute la vie.0	F
+vaccins	Louis Pasteur est l'inventeur de la vaccination.0	F
+vaccins	Les vaccins affaiblissent le systeme immunitaire.0	F
+vaccins	1,5 million d'enfants meurent annuellement, car ils ne sont pas vaccines.0	V
+vaccins	L'allaitement protege mieux des infections que les vaccins.0	F
+vaccins	Les vaccins sauvent de deux a trois millions de vies annuellement.0	V
+vaccins	Les vaccins ont permis d'eradiquer la variole.0	V
+vaccins	Les effets secondaires des vaccins sont plus importants chez les bebes.0	F
+arbres	Contrairement aux feuillus, toutes les especes de coniferes conservent leurs aiguilles en permanance.0	F
+arbres	Le fameux Wawona tree s'est ecrase a la suite d'une chute de neige.0	V
+arbres	La localisation du plus grand arbre du monde est gardee secrete.0	V
+arbres	Les aiguilles de l'epicea (epinette) sont plus carrees que celles du sapin.0	V
+arbres	Old Tjikko aurait plus de 9550 ans.0	V
+arbres	Il faudrait attendre qu'un chaine liege ait 40 ans avant d'utiliser son ecorce pour fabriquer des bouchons.0	V
+arbres	En Californie, un pin ariste nomme Mathusalem, aurait plus de 4800 ans.0	V
+arbres	Il existe environ 700 varietes de pommes dans le monde.0	F
+arbres	Un arbre de 50 ans possede environ 10 000 feuilles.0	F
+arbres	Durant les 50 premieres annes de sa vie, un arbre absorbe environ une tonne de dioxyde de carbone.0	V
+meteo	Environ 20 pourcent de la chaleur a la surface de la Terre provient du noyau de la planete.0	F
+meteo	Les grelons doublent de volume durant leur chute vers le sol.0	F
+meteo	Les cumulus se trouvent entre 5000 et 9000 m d'altitude.0	F
+meteo	L'endroit le plus sec de la Terre se trouve au Chili.	V
+meteo	Une tempete tropicale devient un ouragan lorsque la vitesse des vents depasse 119 km/h.	V
+meteo	Les mots brume et brouillard sont synonymes.0	F
+meteo	Certainnes regions d'Amazonie recoivent 1016 cm de pluie chaque annee.0	V
+meteo	Les ouragans puisent une grande partie de leur energie dans la chaleur degagee par les deserts.0	F
+meteo	Le courant jet polaire de l'hemisphere Nord se deplace a la vitesse moyenne de 60 km/h.0	F
+meteo	Les typhons sont plus violents que les ouragans.0	F
+4bim	La charge de travail en 4bim est mega chill.0	F
+4bim	La PDB est veneree chez les profs de 4bim.0	V
+4bim	La linearisation prevoit des centres.0	V
+4bim	Elise est la boss du projet reseau.0	V
+4bim	5,5 est la moyenne des aller-venues de Cloe pour aller aux toilettes pendant les cours.0	F
+4bim	C'est juste un point append.0	V
+4bim	L'amour qu'a Lauren pour Sandrine Charles est plus grand que Mars.0	V
+4bim	Le puzzle a ete fini en 2 mois.0	F
+4bim	Le projecteur de la 4bim est aussi clair que les cours de Bledina.0	V
+4bim	Paco est deja arrive a l'heure le matin.0	F
+4bim	Marine a deja tenu un jour sans s'endormir en classe.0	F
+4bim	Baptiste can fully understand this statement without asking the meaning of it.0	F
+4bim	Houmous.0	V
+4bim	Marie deteste les pack-apero.0	F
+4bim	Alice n'a jamais faim.0	F
