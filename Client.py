@@ -42,7 +42,6 @@ class Client:
         # Connexion au serveur
         print("En attente de connexion ...")
         self.sock = socket(AF_INET, SOCK_STREAM)
-        self.sock .setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
         self.sock .setsockopt(SOL_SOCKET, SO_BROADCAST, 1)
         self.sock.connect((addr,8000))
         self.sock.sendall(self.name.encode('ascii'))
