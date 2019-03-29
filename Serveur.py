@@ -99,7 +99,7 @@ class Serveur:
         sockClient.close()
 
     def partie(self, lanceur, sockLanceur):
-        try :
+        #try :
             # Récupération des joueurs connectés
             # connexions.put("Done")
             consigne="La partie va commencer o/ \nVous avez 30sec pour repondre a chaque question ... \nBonne chance :) \n"
@@ -325,12 +325,7 @@ class Serveur:
             msg="\nMerci d'avoir joue ! :)"
             self.fin_partie(joueurs,msg)
             print("Fin de la partie ...\n")
-        except :
-            print("Erreur dans la partie")
-        finally :
-            msg="\nMerci d'avoir joue ! :)"
-            self.fin_partie(joueurs,msg)
-            print("Fin de la partie ...\n")
+
         
 
     def retirer(self,joueurs,pseudo):
