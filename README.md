@@ -4,7 +4,7 @@ Projet réalisé dans le cadre du cours "Programmation réseau" de 4BIM.
 
 Language utilisé: Python3
 
-Le but de ce projet est de créer un quizz en réseau. Il faut premièrement lancer le fichier Serveur.py puis plusieurs clients avec le fichier Client.py. En se connectant, chaque participant choisit son pseudo. Il est également possible de choisir son pseudo directement en lancant le fichier Client.py (Exemple: python3 Client.py pseudo). Dans ce cas le pseudo ne sera pas demander.
+Le but de ce projet est de créer un quizz en réseau. Il faut premièrement exécuter le fichier Serveur.py (python3 Serveur.py) puis un ou plusieurs clients avec le fichier Client.py : en exécutant directement le fichier (python3 Client.py), chaque participant choisi son pseudo avant de se connecter au serveur en local (l'adresse du serveur étant 127.0.0.1 par défaut). Il est également possible de choisir son pseudo directement en lancant le fichier Client.py (Exemple: python3 Client.py pseudo). Dans ce cas le pseudo ne sera pas demandé. Enfin, pour une utilisation en réseau avec plusieurs machines, il faut fournir le pseudo ainsi que l'adresse IP de la machine sur laquelle le serveur a été lancé (Exemple: python3 Client.py pseudo 134.214.XXX.XXX)
 
 Une fois connectés, les joueurs doivent choisir entre:
  * Attendre que d'autres joueurs se connectent ("wait")
