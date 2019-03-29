@@ -1,8 +1,16 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+""" Fichier Serveur.py
+
+Le fichier génère un serveur et reçoit plusieurs connexions en simultané.
+
+Créé le :  Mon Feb 11 2019
+"""
 import multiprocessing as mp
 from multiprocessing import Queue, Manager, Process
 from multiprocessing.sharedctypes import Value, Array
 from socket import *
-import select
+from select import select
 from time import time, ctime
 import sys
 import signal
@@ -10,14 +18,23 @@ import traceback
 import csv
 import random
 
-# Pour éviter l'erreur récurente "port already in use" lors des arrets 
-# repetés de vos codes serveurs, utiliser l'option socket suivante: 
-
 comSocket = socket(AF_INET, SOCK_STREAM)
 comSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
 
 
 class Serveur:
+    """La classe serveur permet de gérer plusieurs connexions avec des clients en réseau,
+    le lancement d'une partie de quizz et les communications avec les clients.
+
+    :ivar int TEMPS_MAX: délai imparti de réponses en secondes
+    :ivar int TAILLE_BLOC: taille des blocs pour la communication serveur/client
+    :ivar socket sock: socket du serveur
+    :ivar bool partie en cours: True si un processus partie() a été lancé
+    :ivar Manager() manager: manager pour les données partagées
+    :ivar dict connexions: dictionnaire pseudo:socket des clients connectés au serveur. 
+    :ivar Queue data: queue utilisée pour transmettre les données envoyées par les joueurs au processus partie()
+    """
+
     def __init__(self):
         # Initialisation de la socket serveur
         self.TEMPS_MAX=30
@@ -31,13 +48,15 @@ class Serveur:
          # Attributs
         self.partie_en_cours=Value('i', 0)
         self.manager= Manager()
-        self.connexions = self.manager.dict() # clients connectés au serveur
-        self.data = self.manager.Queue() # Queue pour les communications entre processus
+        self.connexions = self.manager.dict()
+        self.data = self.manager.Queue()
 
         print("Lancement du serveur de Quizz")
         self.run()
 
     def run(self):
+        """Lance le serveur : lancement d'un processus handle_conn() dès qu'une connexion est reçue
+        """
         while True:
             con, addr = self.sock.accept()
             process = mp.Process(target=self.handle_conn, args=(con,addr))
@@ -46,6 +65,13 @@ class Serveur:
         self.sock.close() # Fermeture du serveur
         
     def handle_conn(self, sockClient, addrClient):
+        """Gestion d'une nouvelle connexion client au serveur : le nouveau client est intégré à la liste des connexions, et une alternance lecture/envoie est mise en place pour gérer les communications.
+
+        :param socket sockClient: la socket du Client
+        :param str addr: l'adress de connexion du Client
+
+        :raises: Problème de requête
+        """
         connected = True
         #try:
         # Attribution du pseudo au client et ajout à la liste des connexions
@@ -99,6 +125,17 @@ class Serveur:
         sockClient.close()
 
     def partie(self, lanceur, sockLanceur):
+        """Déroule la partie : envoie les questions aux joueurs et gère leurs réponses
+
+        :param str lanceur: pseudo du joueur ayant lancé la partie
+        :param socket sockLanceur: socket du lanceur
+
+        :ivar dict joueurs: dictionnaire pseudo:score stockant les joueurs connectés
+        :ivar bool fin: True si la partie doit être terminée plus tôt
+        :ivar tab: liste des questions obtenue par la lecture du fichier .csv
+
+        :raises: Deconnexion inattendue
+        """
         try :
             # Récupération des joueurs connectés
             # connexions.put("Done")
@@ -332,14 +369,33 @@ class Serveur:
         
 
     def retirer(self,joueurs,pseudo):
+        """Retire un joueur du dictionnaire en cas de déconnexion
+
+        :param dict joueurs: dictionnaire pseudo:score stockant les joueurs connectés
+        :param str pseudo: pseudo du joueur à retirer
+
+        :returns: True si tout s'est bien exécuté
+        :rtype: bool
+        """
         try :
+            res=True
             del joueurs[pseudo]
             print("%s ne fait plus partie des joueurs" % pseudo)
         except :
+            res=False
             print("%s a deja ete retire" % pseudo)
             pass
+        return res
 
     def envoyer(self,pseudo,msg): # envoi d'un message à afficher au client
+        """Envoie un message à un joueur, pas de réponse attendue
+
+        :param str pseudo: pseudo du joueur avec lequel le serveur doit communiquer
+        :param str msg: message à envoyer
+
+        :returns: True si tout s'est bien exécuté
+        :rtype: bool
+        """
         res=False
         try :
             msg=msg.encode('ascii')
@@ -352,6 +408,14 @@ class Serveur:
         return res
 
     def demander(self,pseudo,msg): # envoi d'un message attendant une réponse
+        """Envoie un message à un joueur en précisant qu'une réponse est attendue
+
+        :param str pseudo: pseudo du joueur avec lequel le serveur doit communiquer
+        :param str msg: message à envoyer
+
+        :returns: True si tout s'est bien exécuté
+        :rtype: bool
+        """
         res=False
         try :
             msg+='1'
@@ -365,6 +429,11 @@ class Serveur:
         return res
 
     def lire_queue(self) :
+        """Lecture des données présentes dans la queue data.
+
+        :returns: True si la queue a bien été lue, le pseudo du joueur ayant envoyé un message et le message reçu
+        :rtype: bool,str,str
+        """
         succes = False
         try:
             pseudo=self.data.get() # pseudo
@@ -376,6 +445,11 @@ class Serveur:
         return succes,pseudo,reponse
 
     def fin_partie(self,joueurs,msg):
+        """Fonction terminant proprement la partie : parcourt le dictionnaire des joueurs et envoie à chacun un message de cloture, puis demande s'ils veulent rejouer.
+
+        :param dict joueurs: dictionnaire pseudo:score stockant les joueurs connectés
+        :param str msg: message à envoyer aux joueurs
+        """
         rejouer="Que voulez vous faire ?\n"
         fin="Fin Partie"
         for pseudo in joueurs.keys():

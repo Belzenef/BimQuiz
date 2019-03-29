@@ -1,26 +1,38 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Mon Feb 11 11:17:49 2019
+""" Fichier Client.py
 
-@author: ejacquemet
+Le fichier génère une nouvelle connexion et gère les interactions entre le serveur et l'utilisateur.
+
+Créé le :  Mon Feb 11 2019
 """
 
 from socket import *
-#import select
 from time import time, ctime
 import sys
 import select
-#import signal
-
-# Pour éviter l'erreur récurente "port already in use" lors des arrets 
-# repetés de vos codes serveurs, utiliser l'option socket suivante: 
 
 comSocket = socket(AF_INET, SOCK_STREAM)
 comSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
 
 class Client:
+    """La classe client permet de stocker les attributs décrivant la connexion établie entre l'utilisateur et le serveur.
+
+    :param str ch: le pseudo du joueur, à saisir au lancement du programme
+    :param str addr: l'adresse IP de la machine sur laquelle tourne le serveur (localhost par défaut)
+
+    :ivar int TEMPS_MAX: délai imparti de réponses en secondes
+    :ivar int TAILLE_BLOC: taille des blocs pour la communication serveur/client
+    :ivar str name: pseudo du joueur
+    :ivar socket sock: socket du client
+    :ivar bool connected: True si connexion établie
+    :ivar bool playing: Tue si le client a intégré une partie
+
+    :raises: :class:`KeyboardInterrupt`: Fin de connexion demandée par le client
+    """
+
     def __init__(self,ch,addr):
+
         # Attributs
         self.TEMPS_MAX=30
         self.TAILLE_BLOC=4096 
@@ -98,6 +110,14 @@ class Client:
             self.sock.close()
 
     def lire(self,sock):
+        """Lecture des données envoyées par le serveur. Les données sont affichées par la fonction. Selon la valeur du dernier caractère lu, des actions différentes seront demandées au client (rester en mode lecture ou saisie clavier. La fonction lire() permet donc de contrôler ces différents cas.
+
+        :param sock: la socket du serveur
+        :type sock: socket
+
+        :returns: dernier caractère de la chaine reçue
+        :rtype: char
+        """
         reponse = sock.recv(self.TAILLE_BLOC).decode('ascii')
         res=False
         if len(reponse)>0 :
