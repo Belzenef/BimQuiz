@@ -1,0 +1,390 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Client &mdash; documentation BIM QUIZZ 0</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../genindex.html"/>
+        <link rel="search" title="Recherche" href="../search.html"/>
+    <link rel="top" title="documentation BIM QUIZZ 0" href="../index.html"/>
+        <link rel="up" title="Code du module" href="index.html"/> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> BIM QUIZZ
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html">Modules :</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../README.html">Manuel d’utilisation</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">BIM QUIZZ</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="index.html">Code du module</a> &raquo;</li>
+        
+      <li>Client</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Code source de Client</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python3</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot; Fichier Client.py</span>
+
+<span class="sd">Le fichier génère une nouvelle connexion et gère les interactions entre le serveur et l&#39;utilisateur.</span>
+
+<span class="sd">Créé le :  Mon Feb 11 2019</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">socket</span> <span class="k">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">time</span> <span class="k">import</span> <span class="n">time</span><span class="p">,</span> <span class="n">ctime</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">select</span>
+
+<span class="n">comSocket</span> <span class="o">=</span> <span class="n">socket</span><span class="p">(</span><span class="n">AF_INET</span><span class="p">,</span> <span class="n">SOCK_STREAM</span><span class="p">)</span>
+<span class="n">comSocket</span><span class="o">.</span><span class="n">setsockopt</span><span class="p">(</span><span class="n">SOL_SOCKET</span><span class="p">,</span> <span class="n">SO_REUSEADDR</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Client"><a class="viewcode-back" href="../_autosummary/Client.html#Client.Client">[docs]</a><span class="k">class</span> <span class="nc">Client</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;La classe client permet de stocker les attributs décrivant la connexion établie entre l&#39;utilisateur et le serveur.</span>
+
+<span class="sd">    :param str ch: le pseudo du joueur, à saisir au lancement du programme</span>
+<span class="sd">    :param str addr: l&#39;adresse IP de la machine sur laquelle tourne le serveur (localhost par défaut)</span>
+
+<span class="sd">    :ivar int TEMPS_MAX: délai imparti de réponses en secondes</span>
+<span class="sd">    :ivar int TAILLE_BLOC: taille des blocs pour la communication serveur/client</span>
+<span class="sd">    :ivar str name: pseudo du joueur</span>
+<span class="sd">    :ivar socket sock: socket du client</span>
+<span class="sd">    :ivar bool connected: True si connexion établie</span>
+<span class="sd">    :ivar bool playing: Tue si le client a intégré une partie</span>
+
+<span class="sd">    :raises: :class:`KeyboardInterrupt`: Fin de connexion demandée par le client</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">ch</span><span class="p">,</span><span class="n">addr</span><span class="p">):</span>
+
+        <span class="c1"># Attributs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">TEMPS_MAX</span><span class="o">=</span><span class="mi">30</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">TAILLE_BLOC</span><span class="o">=</span><span class="mi">4096</span> 
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">ch</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connected</span><span class="o">=</span><span class="kc">False</span>
+        
+        <span class="c1"># Connexion au serveur</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;En attente de connexion ...&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sock</span> <span class="o">=</span> <span class="n">socket</span><span class="p">(</span><span class="n">AF_INET</span><span class="p">,</span> <span class="n">SOCK_STREAM</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sock</span> <span class="o">.</span><span class="n">setsockopt</span><span class="p">(</span><span class="n">SOL_SOCKET</span><span class="p">,</span> <span class="n">SO_BROADCAST</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sock</span><span class="o">.</span><span class="n">connect</span><span class="p">((</span><span class="n">addr</span><span class="p">,</span><span class="mi">8000</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sock</span><span class="o">.</span><span class="n">sendall</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;ascii&#39;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sock</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">TAILLE_BLOC</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;ascii&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Bienvenue, </span><span class="si">%s</span><span class="s2"> ! :) </span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Tapez &#39;start&#39; pour lancer une partie&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Tapez &#39;wait&#39; pour attendre vos amis&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Tapez &#39;quit&#39; pour quiter le jeu&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">connected</span><span class="o">=</span><span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">playing</span><span class="o">=</span><span class="kc">False</span> <span class="c1"># le client connecté n&#39;est pas encore dans une partie</span>
+        <span class="n">inp</span><span class="o">=</span><span class="kc">True</span> <span class="c1"># bool permettant de demander à l&#39;utilisateur de saisir au clavier</span>
+        <span class="k">try</span> <span class="p">:</span>
+            <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">connected</span> <span class="p">:</span>
+                <span class="k">if</span> <span class="n">inp</span> <span class="p">:</span> <span class="c1"># Si le serveur demande une communication</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;&gt;&quot;</span><span class="p">)</span>
+                    <span class="n">i</span><span class="p">,</span> <span class="n">o</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">select</span><span class="o">.</span><span class="n">select</span><span class="p">(</span> <span class="p">[</span><span class="n">sys</span><span class="o">.</span><span class="n">stdin</span><span class="p">],</span> <span class="p">[],</span> <span class="p">[],</span> <span class="bp">self</span><span class="o">.</span><span class="n">TEMPS_MAX</span> <span class="p">)</span>
+
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">playing</span> <span class="p">:</span> <span class="c1"># client en train de jouer</span>
+                        <span class="k">if</span> <span class="p">(</span><span class="n">i</span><span class="p">):</span>
+                            <span class="n">line</span><span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">stdin</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+                            <span class="n">line</span><span class="o">+=</span><span class="s2">&quot;</span><span class="se">\x00</span><span class="s2">&quot;</span>
+                            <span class="k">if</span> <span class="n">line</span> <span class="o">==</span> <span class="s2">&quot;quit</span><span class="se">\x00</span><span class="s2">&quot;</span> <span class="p">:</span> 
+                                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Fin de la connexion&quot;</span><span class="p">)</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">sock</span><span class="o">.</span><span class="n">sendall</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;ascii&#39;</span><span class="p">))</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">connected</span><span class="o">=</span><span class="kc">False</span>
+                            <span class="k">else</span> <span class="p">:</span>
+                                <span class="n">line</span><span class="o">=</span><span class="n">line</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;ascii&#39;</span><span class="p">)</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">sock</span><span class="o">.</span><span class="n">sendall</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+                                <span class="n">inp</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">lire</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sock</span><span class="p">)</span>
+                        <span class="k">else</span><span class="p">:</span> <span class="c1"># si pas d&#39;activité au bout de 30sec, retour à un etat de lecture</span>
+                            <span class="n">line</span><span class="o">=</span><span class="s2">&quot;none</span><span class="se">\x00</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;ascii&#39;</span><span class="p">)</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">sock</span><span class="o">.</span><span class="n">sendall</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+                            <span class="n">inp</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">lire</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sock</span><span class="p">)</span>
+
+                    <span class="k">else</span> <span class="p">:</span> <span class="c1"># nouveau client</span>
+                        <span class="k">if</span> <span class="p">(</span><span class="n">i</span><span class="p">):</span>
+                            <span class="n">line</span><span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">stdin</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+                            <span class="n">line</span><span class="o">+=</span><span class="s2">&quot;!&quot;</span>
+                            <span class="k">if</span> <span class="n">line</span> <span class="o">==</span> <span class="s2">&quot;quit!&quot;</span> <span class="p">:</span> 
+                                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Fin de la connexion&quot;</span><span class="p">)</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">sock</span><span class="o">.</span><span class="n">sendall</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;ascii&#39;</span><span class="p">))</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">connected</span><span class="o">=</span><span class="kc">False</span>
+                            <span class="k">elif</span> <span class="n">line</span> <span class="o">==</span> <span class="s2">&quot;start!&quot;</span> <span class="p">:</span> 
+                                <span class="bp">self</span><span class="o">.</span><span class="n">sock</span><span class="o">.</span><span class="n">sendall</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;ascii&#39;</span><span class="p">))</span>
+                                <span class="n">inp</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">lire</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sock</span><span class="p">)</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">playing</span><span class="o">=</span><span class="kc">True</span>
+                            <span class="k">else</span> <span class="p">:</span>
+                                <span class="n">line</span><span class="o">=</span><span class="n">line</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;ascii&#39;</span><span class="p">)</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">sock</span><span class="o">.</span><span class="n">sendall</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+                                <span class="n">inp</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">lire</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sock</span><span class="p">)</span>
+                        <span class="k">else</span><span class="p">:</span> <span class="c1"># si pas d&#39;activité au bout de 30sec, retour à un etat de lecture</span>
+                            <span class="n">line</span><span class="o">=</span><span class="s2">&quot;none!&quot;</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;ascii&#39;</span><span class="p">)</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">sock</span><span class="o">.</span><span class="n">sendall</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+                            <span class="n">inp</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">lire</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sock</span><span class="p">)</span>
+
+                <span class="k">else</span> <span class="p">:</span> <span class="c1"># si pas de communication attendue, lecture simple du serveur</span>
+                    <span class="n">inp</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">lire</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sock</span><span class="p">)</span>
+
+        <span class="k">except</span> <span class="ne">KeyboardInterrupt</span> <span class="p">:</span> <span class="c1"># interruption clavier côté client</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Fin de la connexion&quot;</span><span class="p">)</span>
+            <span class="n">line</span> <span class="o">=</span> <span class="s2">&quot;quit</span><span class="se">\x00</span><span class="s2">&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sock</span><span class="o">.</span><span class="n">sendall</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;ascii&#39;</span><span class="p">))</span>
+        <span class="k">finally</span> <span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sock</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+<div class="viewcode-block" id="Client.lire"><a class="viewcode-back" href="../_autosummary/Client.html#Client.Client.lire">[docs]</a>    <span class="k">def</span> <span class="nf">lire</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">sock</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Lecture des données envoyées par le serveur. Les données sont affichées par la fonction. Selon la valeur du dernier caractère lu, des actions différentes seront demandées au client (rester en mode lecture ou saisie clavier. La fonction lire() permet donc de contrôler ces différents cas.</span>
+
+<span class="sd">        :param socket sock: la socket du serveur</span>
+
+<span class="sd">        :returns: dernier caractère de la chaine reçue</span>
+<span class="sd">        :rtype: char</span>
+
+<span class="sd">        :Example:</span>
+
+<span class="sd">        &gt;&gt;&gt; Client = Client()</span>
+<span class="sd">        &gt;&gt;&gt; client.lire(sock)</span>
+<span class="sd">        Message envoyé par le client via la socket &#39;sock&#39;</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">reponse</span> <span class="o">=</span> <span class="n">sock</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">TAILLE_BLOC</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;ascii&#39;</span><span class="p">)</span>
+        <span class="n">res</span><span class="o">=</span><span class="kc">False</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">reponse</span><span class="p">)</span><span class="o">&gt;</span><span class="mi">0</span> <span class="p">:</span>
+            <span class="k">if</span> <span class="n">reponse</span><span class="o">==</span><span class="s1">&#39;Debut Partie&#39;</span> <span class="p">:</span> <span class="c1"># debut de partie</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">playing</span><span class="o">=</span><span class="kc">True</span>
+            <span class="k">elif</span> <span class="n">reponse</span><span class="o">==</span><span class="s1">&#39;Fin Partie&#39;</span> <span class="p">:</span> <span class="c1"># fin de partie</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">playing</span><span class="o">=</span><span class="kc">False</span>
+            <span class="k">elif</span> <span class="n">reponse</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">==</span><span class="s1">&#39;1&#39;</span> <span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">reponse</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+                <span class="n">res</span><span class="o">=</span><span class="kc">True</span>
+            <span class="k">else</span> <span class="p">:</span> 
+                <span class="nb">print</span><span class="p">(</span><span class="n">reponse</span><span class="p">)</span>
+        <span class="k">else</span> <span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Le serveur a ete deconnecte&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">connected</span><span class="o">=</span><span class="kc">False</span>
+        <span class="k">return</span> <span class="n">res</span></div></div>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">)</span><span class="o">&gt;=</span><span class="mi">3</span><span class="p">:</span>
+                <span class="n">ch</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">addr</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">)</span><span class="o">&gt;=</span><span class="mi">2</span><span class="p">:</span>
+                <span class="n">ch</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">addr</span><span class="o">=</span><span class="s2">&quot;127.0.0.1&quot;</span>
+        <span class="k">else</span> <span class="p">:</span> 
+            <span class="n">ch</span><span class="o">=</span><span class="nb">input</span><span class="p">(</span><span class="s1">&#39;Choisissez un pseudo &gt; &#39;</span><span class="p">)</span>
+            <span class="n">addr</span><span class="o">=</span><span class="s2">&quot;127.0.0.1&quot;</span>
+        <span class="k">while</span> <span class="n">ch</span><span class="o">==</span><span class="s2">&quot;&quot;</span> <span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Desole, ce pseudo n&#39;est pas valide !&quot;</span><span class="p">)</span>
+            <span class="n">ch</span><span class="o">=</span><span class="nb">input</span><span class="p">(</span><span class="s1">&#39;Choisissez un pseudo &gt; &#39;</span><span class="p">)</span>
+        <span class="n">Client</span><span class="p">(</span><span class="n">ch</span><span class="p">,</span><span class="n">addr</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">KeyboardInterrupt</span> <span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Fin de la connexion au serveur&quot;</span><span class="p">)</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Exception inatendue&quot;</span><span class="p">)</span>
+    <span class="k">finally</span> <span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Merci d&#39;avoir joue ! ^_^ &quot;</span><span class="p">)</span>
+</pre></div>
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, E. Jacquemet, A. Genestier, C. Mendoza, M. Codet.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" src="../_static/translations.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

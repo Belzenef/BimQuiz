@@ -111,11 +111,17 @@ class Client:
     def lire(self,sock):
         """Lecture des données envoyées par le serveur. Les données sont affichées par la fonction. Selon la valeur du dernier caractère lu, des actions différentes seront demandées au client (rester en mode lecture ou saisie clavier. La fonction lire() permet donc de contrôler ces différents cas.
 
-        :param sock: la socket du serveur
-        :type sock: socket
+        :param socket sock: la socket du serveur
 
         :returns: dernier caractère de la chaine reçue
         :rtype: char
+
+        :Example:
+
+        >>> Client = Client()
+        >>> client.lire(sock)
+        Message envoyé par le client via la socket 'sock'
+
         """
         reponse = sock.recv(self.TAILLE_BLOC).decode('ascii')
         res=False

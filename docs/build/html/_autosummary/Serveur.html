@@ -1,0 +1,487 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Serveur &mdash; documentation BIM QUIZZ 0</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../genindex.html"/>
+        <link rel="search" title="Recherche" href="../search.html"/>
+    <link rel="top" title="documentation BIM QUIZZ 0" href="../index.html"/>
+        <link rel="up" title="Modules :" href="../modules.html"/>
+        <link rel="next" title="Client" href="Client.html"/>
+        <link rel="prev" title="Modules :" href="../modules.html"/> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> BIM QUIZZ
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../modules.html">Modules :</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Serveur</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Client.html">Client</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../README.html">Manuel d’utilisation</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">BIM QUIZZ</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../modules.html">Modules :</a> &raquo;</li>
+        
+      <li>Serveur</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/_autosummary/Serveur.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-Serveur">
+<span id="serveur"></span><h1>Serveur<a class="headerlink" href="#module-Serveur" title="Lien permanent vers ce titre">¶</a></h1>
+<p>Fichier Serveur.py</p>
+<p>Le fichier génère un serveur et reçoit plusieurs connexions en simultané.</p>
+<p>Créé le :  Mon Feb 11 2019</p>
+<p class="rubric">Classes</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#Serveur.Serveur" title="Serveur.Serveur"><code class="xref py py-obj docutils literal"><span class="pre">Serveur</span></code></a>()</td>
+<td>La classe serveur permet de gérer plusieurs connexions avec des clients en réseau, le lancement d’une partie de quizz et les communications avec les clients.</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Fonctions</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#Serveur.Serveur.run" title="Serveur.Serveur.run"><code class="xref py py-obj docutils literal"><span class="pre">Serveur.run</span></code></a>()</td>
+<td>Lance le serveur : lancement d’un processus handle_conn() dès qu’une connexion est reçue</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#Serveur.Serveur.handle_conn" title="Serveur.Serveur.handle_conn"><code class="xref py py-obj docutils literal"><span class="pre">Serveur.handle_conn</span></code></a>(sockClient,&nbsp;addrClient)</td>
+<td>Gestion d’une nouvelle connexion client au serveur : le nouveau client est intégré à la liste des connexions, et une alternance lecture/envoie est mise en place pour gérer les communications.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#Serveur.Serveur.partie" title="Serveur.Serveur.partie"><code class="xref py py-obj docutils literal"><span class="pre">Serveur.partie</span></code></a>(lanceur,&nbsp;sockLanceur)</td>
+<td>Déroule la partie : envoie les questions aux joueurs et gère leurs réponses</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#Serveur.Serveur.retirer" title="Serveur.Serveur.retirer"><code class="xref py py-obj docutils literal"><span class="pre">Serveur.retirer</span></code></a>(joueurs,&nbsp;pseudo)</td>
+<td>Retire un joueur du dictionnaire en cas de déconnexion</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#Serveur.Serveur.envoyer" title="Serveur.Serveur.envoyer"><code class="xref py py-obj docutils literal"><span class="pre">Serveur.envoyer</span></code></a>(pseudo,&nbsp;msg)</td>
+<td>Envoie un message à un joueur, pas de réponse attendue</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#Serveur.Serveur.demander" title="Serveur.Serveur.demander"><code class="xref py py-obj docutils literal"><span class="pre">Serveur.demander</span></code></a>(pseudo,&nbsp;msg)</td>
+<td>Envoie un message à un joueur en précisant qu’une réponse est attendue</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#Serveur.Serveur.lire_queue" title="Serveur.Serveur.lire_queue"><code class="xref py py-obj docutils literal"><span class="pre">Serveur.lire_queue</span></code></a>()</td>
+<td>Lecture des données présentes dans la queue data.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#Serveur.Serveur.fin_partie" title="Serveur.Serveur.fin_partie"><code class="xref py py-obj docutils literal"><span class="pre">Serveur.fin_partie</span></code></a>(joueurs,&nbsp;msg)</td>
+<td>Fonction terminant proprement la partie : parcourt le dictionnaire des joueurs et envoie à chacun un message de cloture, puis demande s’ils veulent rejouer.</td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="Serveur.Serveur">
+<em class="property">class </em><code class="descclassname">Serveur.</code><code class="descname">Serveur</code><a class="reference internal" href="../_modules/Serveur.html#Serveur"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Serveur.Serveur" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Bases : <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>La classe serveur permet de gérer plusieurs connexions avec des clients en réseau,
+le lancement d’une partie de quizz et les communications avec les clients.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
+<li><strong>TEMPS_MAX</strong> (<em>int</em>) – délai imparti de réponses en secondes</li>
+<li><strong>TAILLE_BLOC</strong> (<em>int</em>) – taille des blocs pour la communication serveur/client</li>
+<li><strong>sock</strong> (<em>socket</em>) – socket du serveur</li>
+<li><strong>partie en cours</strong> (<em>bool</em>) – True si un processus partie() a été lancé</li>
+<li><strong>manager</strong> (<em>Manager</em><em>(</em><em>)</em>) – manager pour les données partagées</li>
+<li><strong>connexions</strong> (<em>dict</em>) – dictionnaire pseudo:socket des clients connectés au serveur.</li>
+<li><strong>data</strong> (<em>Queue</em>) – queue utilisée pour transmettre les données envoyées par les joueurs au processus partie()</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="Serveur.Serveur.demander">
+<code class="descname">demander</code><span class="sig-paren">(</span><em>pseudo</em>, <em>msg</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/Serveur.html#Serveur.demander"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Serveur.Serveur.demander" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Envoie un message à un joueur en précisant qu’une réponse est attendue</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Paramètres:</th><td class="field-body"><ul class="first simple">
+<li><strong>pseudo</strong> (<em>str</em>) – pseudo du joueur avec lequel le serveur doit communiquer</li>
+<li><strong>msg</strong> (<em>str</em>) – message à envoyer</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Retourne:</th><td class="field-body"><p class="first">True si tout s’est bien exécuté</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Type retourné:</th><td class="field-body"><p class="first last">bool</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="Serveur.Serveur.envoyer">
+<code class="descname">envoyer</code><span class="sig-paren">(</span><em>pseudo</em>, <em>msg</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/Serveur.html#Serveur.envoyer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Serveur.Serveur.envoyer" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Envoie un message à un joueur, pas de réponse attendue</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Paramètres:</th><td class="field-body"><ul class="first simple">
+<li><strong>pseudo</strong> (<em>str</em>) – pseudo du joueur avec lequel le serveur doit communiquer</li>
+<li><strong>msg</strong> (<em>str</em>) – message à envoyer</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Retourne:</th><td class="field-body"><p class="first">True si tout s’est bien exécuté</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Type retourné:</th><td class="field-body"><p class="first last">bool</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="Serveur.Serveur.fin_partie">
+<code class="descname">fin_partie</code><span class="sig-paren">(</span><em>joueurs</em>, <em>msg</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/Serveur.html#Serveur.fin_partie"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Serveur.Serveur.fin_partie" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Fonction terminant proprement la partie : parcourt le dictionnaire des joueurs et envoie à chacun un message de cloture, puis demande s’ils veulent rejouer.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Paramètres:</th><td class="field-body"><ul class="first last simple">
+<li><strong>joueurs</strong> (<em>dict</em>) – dictionnaire pseudo:score stockant les joueurs connectés</li>
+<li><strong>msg</strong> (<em>str</em>) – message à envoyer aux joueurs</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="Serveur.Serveur.handle_conn">
+<code class="descname">handle_conn</code><span class="sig-paren">(</span><em>sockClient</em>, <em>addrClient</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/Serveur.html#Serveur.handle_conn"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Serveur.Serveur.handle_conn" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Gestion d’une nouvelle connexion client au serveur : le nouveau client est intégré à la liste des connexions, et une alternance lecture/envoie est mise en place pour gérer les communications.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Paramètres:</th><td class="field-body"><ul class="first simple">
+<li><strong>sockClient</strong> (<em>socket</em>) – la socket du Client</li>
+<li><strong>addr</strong> (<em>str</em>) – l’adress de connexion du Client</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last">Problème de requête</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="Serveur.Serveur.lire_queue">
+<code class="descname">lire_queue</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/Serveur.html#Serveur.lire_queue"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Serveur.Serveur.lire_queue" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Lecture des données présentes dans la queue data.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Retourne:</th><td class="field-body">True si la queue a bien été lue, le pseudo du joueur ayant envoyé un message et le message reçu</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Type retourné:</th><td class="field-body">bool,str,str</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Example:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">serveur</span> <span class="o">=</span> <span class="n">Serveur</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">serveur</span><span class="o">.</span><span class="n">lire_queue</span><span class="p">()</span>
+<span class="go">[True,&#39;elise&#39;,&#39;Hello&#39;]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="Serveur.Serveur.partie">
+<code class="descname">partie</code><span class="sig-paren">(</span><em>lanceur</em>, <em>sockLanceur</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/Serveur.html#Serveur.partie"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Serveur.Serveur.partie" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Déroule la partie : envoie les questions aux joueurs et gère leurs réponses</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Paramètres:</th><td class="field-body"><ul class="first simple">
+<li><strong>lanceur</strong> (<em>str</em>) – pseudo du joueur ayant lancé la partie</li>
+<li><strong>sockLanceur</strong> (<em>socket</em>) – socket du lanceur</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first simple">
+<li><strong>joueurs</strong> (<em>dict</em>) – dictionnaire pseudo:score stockant les joueurs connectés</li>
+<li><strong>fin</strong> (<em>bool</em>) – True si la partie doit être terminée plus tôt</li>
+<li><strong>tab</strong> – liste des questions obtenue par la lecture du fichier .csv</li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last">Deconnexion inattendue</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="Serveur.Serveur.retirer">
+<code class="descname">retirer</code><span class="sig-paren">(</span><em>joueurs</em>, <em>pseudo</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/Serveur.html#Serveur.retirer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Serveur.Serveur.retirer" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Retire un joueur du dictionnaire en cas de déconnexion</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Paramètres:</th><td class="field-body"><ul class="first simple">
+<li><strong>joueurs</strong> (<em>dict</em>) – dictionnaire pseudo:score stockant les joueurs connectés</li>
+<li><strong>pseudo</strong> (<em>str</em>) – pseudo du joueur à retirer</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Retourne:</th><td class="field-body"><p class="first">True si tout s’est bien exécuté</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Type retourné:</th><td class="field-body"><p class="first last">bool</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="Serveur.Serveur.run">
+<code class="descname">run</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/Serveur.html#Serveur.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Serveur.Serveur.run" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Lance le serveur : lancement d’un processus handle_conn() dès qu’une connexion est reçue</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="Client.html" class="btn btn-neutral float-right" title="Client" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="../modules.html" class="btn btn-neutral" title="Modules :" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, E. Jacquemet, A. Genestier, C. Mendoza, M. Codet.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" src="../_static/translations.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

@@ -1,0 +1,691 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Serveur &mdash; documentation BIM QUIZZ 0</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../genindex.html"/>
+        <link rel="search" title="Recherche" href="../search.html"/>
+    <link rel="top" title="documentation BIM QUIZZ 0" href="../index.html"/>
+        <link rel="up" title="Code du module" href="index.html"/> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> BIM QUIZZ
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html">Modules :</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../README.html">Manuel d’utilisation</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">BIM QUIZZ</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="index.html">Code du module</a> &raquo;</li>
+        
+      <li>Serveur</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Code source de Serveur</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python3</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot; Fichier Serveur.py</span>
+
+<span class="sd">Le fichier génère un serveur et reçoit plusieurs connexions en simultané.</span>
+
+<span class="sd">Créé le :  Mon Feb 11 2019</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">multiprocessing</span> <span class="k">as</span> <span class="nn">mp</span>
+<span class="kn">from</span> <span class="nn">multiprocessing</span> <span class="k">import</span> <span class="n">Queue</span><span class="p">,</span> <span class="n">Manager</span><span class="p">,</span> <span class="n">Process</span>
+<span class="kn">from</span> <span class="nn">multiprocessing.sharedctypes</span> <span class="k">import</span> <span class="n">Value</span><span class="p">,</span> <span class="n">Array</span>
+<span class="kn">from</span> <span class="nn">socket</span> <span class="k">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">select</span> <span class="k">import</span> <span class="n">select</span>
+<span class="kn">from</span> <span class="nn">time</span> <span class="k">import</span> <span class="n">time</span><span class="p">,</span> <span class="n">ctime</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">signal</span>
+<span class="kn">import</span> <span class="nn">traceback</span>
+<span class="kn">import</span> <span class="nn">csv</span>
+<span class="kn">import</span> <span class="nn">random</span>
+
+<span class="n">comSocket</span> <span class="o">=</span> <span class="n">socket</span><span class="p">(</span><span class="n">AF_INET</span><span class="p">,</span> <span class="n">SOCK_STREAM</span><span class="p">)</span>
+<span class="n">comSocket</span><span class="o">.</span><span class="n">setsockopt</span><span class="p">(</span><span class="n">SOL_SOCKET</span><span class="p">,</span> <span class="n">SO_REUSEADDR</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="Serveur"><a class="viewcode-back" href="../_autosummary/Serveur.html#Serveur.Serveur">[docs]</a><span class="k">class</span> <span class="nc">Serveur</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;La classe serveur permet de gérer plusieurs connexions avec des clients en réseau,</span>
+<span class="sd">    le lancement d&#39;une partie de quizz et les communications avec les clients.</span>
+
+<span class="sd">    :ivar int TEMPS_MAX: délai imparti de réponses en secondes</span>
+<span class="sd">    :ivar int TAILLE_BLOC: taille des blocs pour la communication serveur/client</span>
+<span class="sd">    :ivar socket sock: socket du serveur</span>
+<span class="sd">    :ivar bool partie en cours: True si un processus partie() a été lancé</span>
+<span class="sd">    :ivar Manager() manager: manager pour les données partagées</span>
+<span class="sd">    :ivar dict connexions: dictionnaire pseudo:socket des clients connectés au serveur. </span>
+<span class="sd">    :ivar Queue data: queue utilisée pour transmettre les données envoyées par les joueurs au processus partie()</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Initialisation de la socket serveur</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">TEMPS_MAX</span><span class="o">=</span><span class="mi">30</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">TAILLE_BLOC</span><span class="o">=</span><span class="mi">4096</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sock</span> <span class="o">=</span> <span class="n">socket</span><span class="p">(</span><span class="n">AF_INET</span><span class="p">,</span> <span class="n">SOCK_STREAM</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sock</span> <span class="o">.</span><span class="n">setsockopt</span><span class="p">(</span><span class="n">SOL_SOCKET</span><span class="p">,</span> <span class="n">SO_BROADCAST</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sock</span><span class="o">.</span><span class="n">bind</span><span class="p">((</span><span class="s2">&quot;&quot;</span><span class="p">,</span><span class="mi">8000</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sock</span><span class="o">.</span><span class="n">listen</span><span class="p">(</span><span class="mi">26</span><span class="p">)</span>
+
+         <span class="c1"># Attributs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">partie_en_cours</span><span class="o">=</span><span class="n">Value</span><span class="p">(</span><span class="s1">&#39;i&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="o">=</span> <span class="n">Manager</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connexions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">dict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">Queue</span><span class="p">()</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Lancement du serveur de Quizz&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+
+<div class="viewcode-block" id="Serveur.run"><a class="viewcode-back" href="../_autosummary/Serveur.html#Serveur.Serveur.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Lance le serveur : lancement d&#39;un processus handle_conn() dès qu&#39;une connexion est reçue</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">con</span><span class="p">,</span> <span class="n">addr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sock</span><span class="o">.</span><span class="n">accept</span><span class="p">()</span>
+            <span class="n">process</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">Process</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">handle_conn</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">con</span><span class="p">,</span><span class="n">addr</span><span class="p">))</span>
+            <span class="n">process</span><span class="o">.</span><span class="n">daemon</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">process</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sock</span><span class="o">.</span><span class="n">close</span><span class="p">()</span> <span class="c1"># Fermeture du serveur</span></div>
+
+<div class="viewcode-block" id="Serveur.handle_conn"><a class="viewcode-back" href="../_autosummary/Serveur.html#Serveur.Serveur.handle_conn">[docs]</a>    <span class="k">def</span> <span class="nf">handle_conn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sockClient</span><span class="p">,</span> <span class="n">addrClient</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Gestion d&#39;une nouvelle connexion client au serveur : le nouveau client est intégré à la liste des connexions, et une alternance lecture/envoie est mise en place pour gérer les communications.</span>
+
+<span class="sd">        :param socket sockClient: la socket du Client</span>
+<span class="sd">        :param str addr: l&#39;adress de connexion du Client</span>
+
+<span class="sd">        :raises: Problème de requête</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">connected</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># Attribution du pseudo au client et ajout à la liste des connexions</span>
+            <span class="n">pseudo</span> <span class="o">=</span> <span class="n">sockClient</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">TAILLE_BLOC</span><span class="p">)</span>
+            <span class="n">pseudo</span><span class="o">=</span><span class="n">pseudo</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;ascii&quot;</span><span class="p">)</span>
+            <span class="k">while</span> <span class="n">pseudo</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">connexions</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="p">:</span>
+                <span class="n">pseudo</span><span class="o">+=</span><span class="nb">str</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">100</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">connexions</span><span class="p">[</span><span class="n">pseudo</span><span class="p">]</span><span class="o">=</span><span class="p">(</span><span class="n">sockClient</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> a rejoint le serveur&quot;</span> <span class="o">%</span> <span class="n">pseudo</span><span class="p">)</span>
+            <span class="n">sockClient</span><span class="o">.</span><span class="n">sendall</span><span class="p">(</span><span class="n">pseudo</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;ascii&quot;</span><span class="p">))</span>
+    
+            <span class="c1"># Lancement des communications client/serveur</span>
+            <span class="k">while</span> <span class="n">connected</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="n">sockClient</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">TAILLE_BLOC</span><span class="p">)</span>
+                <span class="n">msg</span><span class="o">=</span><span class="n">msg</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;ascii&#39;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span><span class="o">&gt;</span><span class="mi">0</span> <span class="p">:</span>
+                    <span class="n">nouvJoueur</span><span class="o">=</span><span class="n">msg</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">==</span><span class="s2">&quot;!&quot;</span>
+                    <span class="k">if</span> <span class="n">msg</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span>  <span class="s2">&quot;quit&quot;</span><span class="p">:</span> <span class="c1"># deconnexion côté client</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> a quitte le serveur :&#39;(&quot;</span> <span class="o">%</span><span class="n">pseudo</span><span class="p">)</span>
+                        <span class="n">reponse</span><span class="o">=</span><span class="s2">&quot;quit&quot;</span>
+                        <span class="n">connected</span><span class="o">=</span><span class="kc">False</span>
+                    <span class="k">elif</span> <span class="n">msg</span> <span class="o">==</span> <span class="s2">&quot;start!&quot;</span><span class="p">:</span> <span class="c1"># un nouveau client lance une partie</span>
+                        <span class="c1"># Si aucune partie en cours</span>
+                        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">partie_en_cours</span><span class="o">.</span><span class="n">value</span><span class="o">==</span><span class="mi">0</span> <span class="p">:</span>
+                            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Lancement de la partie ...</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                            <span class="n">reponse</span><span class="o">=</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Vous avez lance une partie :)&quot;</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">partie_en_cours</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">partie_en_cours</span><span class="o">.</span><span class="n">value</span><span class="o">=</span><span class="mi">1</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">partie_en_cours</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
+                            <span class="n">game</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">Process</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">partie</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">pseudo</span><span class="p">,</span><span class="n">sockClient</span><span class="p">))</span>
+                            <span class="n">game</span><span class="o">.</span><span class="n">daemon</span> <span class="o">=</span> <span class="kc">True</span>
+                            <span class="n">game</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+                        <span class="c1"># Si une partie a dejà été lancée auparavant</span>
+                        <span class="k">else</span> <span class="p">:</span>
+                            <span class="n">reponse</span><span class="o">=</span><span class="s2">&quot;Une partie est deja en cours, merci de patienter :/&quot;</span>
+                    <span class="k">else</span> <span class="p">:</span> <span class="c1"># message quelconque </span>
+                        <span class="n">reponse</span><span class="o">=</span><span class="s2">&quot;Veuillez patienter...&quot;</span>
+                    <span class="k">if</span> <span class="n">nouvJoueur</span> <span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;data : &quot;</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">envoyer</span><span class="p">(</span><span class="n">pseudo</span><span class="p">,</span><span class="n">reponse</span><span class="p">)</span>
+                    <span class="k">else</span> <span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">pseudo</span><span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+                <span class="k">else</span> <span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> est deconnecte :&#39;(&quot;</span> <span class="o">%</span><span class="n">pseudo</span><span class="p">)</span>
+                    <span class="n">connected</span><span class="o">=</span><span class="kc">False</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Problem in request ?&quot;</span><span class="p">)</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">connexions</span><span class="p">[</span><span class="n">pseudo</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">process</span> <span class="ow">in</span> <span class="n">mp</span><span class="o">.</span><span class="n">active_children</span><span class="p">():</span>
+                <span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Le lanceur s&#39;est deconnecte :/&quot;</span>
+                <span class="n">rejouer</span><span class="o">=</span><span class="s2">&quot;Que voulez vous faire ?</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="n">fin</span><span class="o">=</span><span class="s2">&quot;Fin Partie&quot;</span>
+                <span class="k">for</span> <span class="n">pseudo</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">connexions</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">envoyer</span><span class="p">(</span><span class="n">pseudo</span><span class="p">,</span><span class="n">msg</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">envoyer</span><span class="p">(</span><span class="n">pseudo</span><span class="p">,</span><span class="n">fin</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">demander</span><span class="p">(</span><span class="n">pseudo</span><span class="p">,</span><span class="n">rejouer</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">partie_en_cours</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">partie_en_cours</span><span class="o">.</span><span class="n">value</span><span class="o">=</span><span class="mi">0</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">partie_en_cours</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Fin de la partie ...&quot;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Fermeture du processus &quot;</span><span class="p">,</span> <span class="n">process</span><span class="p">)</span>
+                <span class="n">process</span><span class="o">.</span><span class="n">terminate</span><span class="p">()</span>
+                <span class="n">process</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+            <span class="n">sockClient</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Serveur.partie"><a class="viewcode-back" href="../_autosummary/Serveur.html#Serveur.Serveur.partie">[docs]</a>    <span class="k">def</span> <span class="nf">partie</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lanceur</span><span class="p">,</span> <span class="n">sockLanceur</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Déroule la partie : envoie les questions aux joueurs et gère leurs réponses</span>
+
+<span class="sd">        :param str lanceur: pseudo du joueur ayant lancé la partie</span>
+<span class="sd">        :param socket sockLanceur: socket du lanceur</span>
+
+<span class="sd">        :ivar dict joueurs: dictionnaire pseudo:score stockant les joueurs connectés</span>
+<span class="sd">        :ivar bool fin: True si la partie doit être terminée plus tôt</span>
+<span class="sd">        :ivar tab: liste des questions obtenue par la lecture du fichier .csv</span>
+
+<span class="sd">        :raises: Deconnexion inattendue</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Récupération des joueurs connectés</span>
+        <span class="c1"># connexions.put(&quot;Done&quot;)</span>
+        <span class="k">try</span> <span class="p">:</span>
+            <span class="n">consigne</span><span class="o">=</span><span class="s2">&quot;La partie va commencer o/ </span><span class="se">\n</span><span class="s2">Vous avez 30sec pour repondre a chaque question ... </span><span class="se">\n</span><span class="s2">Bonne chance :) </span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="n">debut</span><span class="o">=</span><span class="s2">&quot;Debut Partie&quot;</span>
+            <span class="n">fin</span><span class="o">=</span><span class="kc">False</span>
+            <span class="n">joueurs</span><span class="o">=</span><span class="p">{}</span> <span class="c1"># joueurs[pseudo]=score</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Joueurs connectes : &quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">pseudo</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">connexions</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="p">:</span>
+                <span class="n">scoreJoueur</span><span class="o">=</span><span class="mi">0</span>
+                <span class="n">joueurs</span><span class="p">[</span><span class="n">pseudo</span><span class="p">]</span><span class="o">=</span><span class="n">scoreJoueur</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">envoyer</span><span class="p">(</span><span class="n">pseudo</span><span class="p">,</span><span class="n">consigne</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">envoyer</span><span class="p">(</span><span class="n">pseudo</span><span class="p">,</span><span class="n">debut</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">pseudo</span><span class="p">)</span>
+            <span class="n">nb_joueurs</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">joueurs</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Au total, </span><span class="si">%s</span><span class="s2"> joueur(s) sont connectes&quot;</span> <span class="o">%</span> <span class="n">nb_joueurs</span><span class="p">)</span>
+    
+            <span class="c1"># Récupération des questions</span>
+            <span class="n">tab</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">reader</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="s2">&quot;question_quizz.csv&quot;</span><span class="p">,</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">encoding</span> <span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">),</span> <span class="n">dialect</span><span class="o">=</span><span class="s1">&#39;excel-tab&#39;</span><span class="p">)</span>
+            <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">quest</span> <span class="o">=</span><span class="p">{}</span>
+            <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">tab</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">in</span> <span class="n">quest</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                    <span class="n">quest</span><span class="p">[</span><span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">row</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">row</span><span class="p">[</span><span class="mi">2</span><span class="p">]])</span>
+                    
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">quest</span><span class="p">[</span><span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+                    <span class="n">quest</span><span class="p">[</span><span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">row</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">row</span><span class="p">[</span><span class="mi">2</span><span class="p">]])</span>
+    
+    
+            <span class="c1"># Choix du thème</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Choix du theme&quot;</span><span class="p">)</span>
+            <span class="n">choix_theme</span><span class="o">=</span><span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">quest</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span><span class="mi">3</span><span class="p">)</span>
+            <span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Entrer le theme de votre choix parmis ces trois : </span><span class="si">%s</span><span class="s2">, </span><span class="si">%s</span><span class="s2"> et </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="p">(</span><span class="n">choix_theme</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">choix_theme</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">choix_theme</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">lanceur</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">connexions</span> <span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">demander</span><span class="p">(</span><span class="n">lanceur</span><span class="p">,</span><span class="n">msg</span><span class="p">)</span>
+                <span class="n">succes</span><span class="p">,</span><span class="n">pseudo</span><span class="p">,</span><span class="n">reponse</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lire_queue</span><span class="p">()</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">succes</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">reponse</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">succes</span> <span class="p">:</span>
+                    <span class="n">reponse</span><span class="o">=</span><span class="n">reponse</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+                    <span class="k">if</span> <span class="n">reponse</span> <span class="o">==</span> <span class="s2">&quot;quit&quot;</span> <span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Deconnexion inattendue&quot;</span><span class="p">)</span>
+                        <span class="k">del</span> <span class="n">joueurs</span><span class="p">[</span><span class="n">lanceur</span><span class="p">]</span>
+                        <span class="n">fin</span><span class="o">=</span><span class="kc">True</span>
+                    <span class="k">elif</span> <span class="n">reponse</span> <span class="ow">in</span> <span class="n">choix_theme</span> <span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> a choisi le theme </span><span class="si">%s</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">pseudo</span><span class="p">,</span><span class="n">reponse</span><span class="p">))</span>
+                        <span class="n">theme</span> <span class="o">=</span> <span class="n">reponse</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">theme</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">quest</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+                        <span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Vous avez fait n&#39;importe quoi alors on vous donne un theme aleatoire : </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="n">theme</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">envoyer</span><span class="p">(</span><span class="n">lanceur</span><span class="p">,</span><span class="n">msg</span><span class="p">)</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Theme aleatoire : &quot;</span><span class="p">,</span> <span class="n">theme</span><span class="p">)</span>
+                <span class="k">else</span> <span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Deconnexion inattendue&quot;</span><span class="p">)</span>
+                    <span class="k">del</span> <span class="n">joueurs</span><span class="p">[</span><span class="n">lanceur</span><span class="p">]</span>
+                    <span class="n">fin</span><span class="o">=</span><span class="kc">True</span>
+            <span class="k">else</span> <span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Deconnexion inattendue&quot;</span><span class="p">)</span>
+                <span class="k">del</span> <span class="n">joueurs</span><span class="p">[</span><span class="n">lanceur</span><span class="p">]</span>
+                <span class="n">fin</span><span class="o">=</span><span class="kc">True</span> <span class="c1"># si le lanceur se deconnecte, la partie est terminee</span>
+    
+            <span class="c1"># Choix du nb de questions</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Choix du nombre de questions&quot;</span><span class="p">)</span>
+            <span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Combien de questions ? (max </span><span class="si">%d</span><span class="s2">)</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span><span class="nb">len</span><span class="p">(</span><span class="n">quest</span><span class="p">[</span><span class="n">theme</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">lanceur</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">connexions</span> <span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">demander</span><span class="p">(</span><span class="n">lanceur</span><span class="p">,</span><span class="n">msg</span><span class="p">)</span>
+                <span class="n">succes</span><span class="p">,</span><span class="n">pseudo</span><span class="p">,</span><span class="n">reponse</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lire_queue</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">succes</span> <span class="p">:</span>
+                    <span class="k">if</span> <span class="n">reponse</span> <span class="o">==</span> <span class="s2">&quot;quit</span><span class="se">\x00</span><span class="s2">&quot;</span> <span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Deconnexion inattendue&quot;</span><span class="p">)</span>
+                        <span class="k">del</span> <span class="n">joueurs</span><span class="p">[</span><span class="n">lanceur</span><span class="p">]</span>
+                        <span class="n">fin</span><span class="o">=</span><span class="kc">True</span>
+                    <span class="k">else</span> <span class="p">:</span>
+                        <span class="k">try</span> <span class="p">:</span>
+                            <span class="n">rep</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">reponse</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+                        <span class="k">except</span> <span class="p">:</span>
+                            <span class="n">rep</span><span class="o">=</span><span class="mi">3</span>
+                            <span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Vous avez rentre un nombre incorrect ! Nombre de questions par default : </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="n">rep</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">envoyer</span><span class="p">(</span><span class="n">lanceur</span><span class="p">,</span><span class="n">msg</span><span class="p">)</span>
+                            <span class="k">pass</span>
+                        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">rep</span><span class="p">)</span><span class="o">==</span><span class="nb">type</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="ow">and</span> <span class="n">rep</span><span class="o">&lt;=</span><span class="nb">len</span><span class="p">(</span><span class="n">quest</span><span class="p">[</span><span class="n">theme</span><span class="p">])</span> <span class="p">:</span>
+                            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> a choisi </span><span class="si">%s</span><span class="s2"> questions&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">pseudo</span><span class="p">,</span><span class="n">rep</span><span class="p">))</span>
+                            <span class="n">nb_quest</span><span class="o">=</span><span class="n">rep</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">nb_quest</span><span class="o">=</span><span class="mi">3</span>
+                            <span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Vous avez rentre un nombre incorrect ! Nombre de questions par default : </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="n">nb_quest</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">envoyer</span><span class="p">(</span><span class="n">lanceur</span><span class="p">,</span><span class="n">msg</span><span class="p">)</span>
+                <span class="k">else</span> <span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Deconnexion inattendue&quot;</span><span class="p">)</span>
+                    <span class="k">del</span> <span class="n">joueurs</span><span class="p">[</span><span class="n">lanceur</span><span class="p">]</span>
+                    <span class="n">fin</span><span class="o">=</span><span class="kc">True</span>
+            <span class="k">else</span> <span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Deconnexion inattendue&quot;</span><span class="p">)</span>
+                <span class="k">del</span> <span class="n">joueurs</span><span class="p">[</span><span class="n">lanceur</span><span class="p">]</span>
+                <span class="n">fin</span><span class="o">=</span><span class="kc">True</span>
+    
+            <span class="c1"># Selection des questions</span>
+            <span class="n">nb_quest_theme</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">quest</span><span class="p">[</span><span class="n">theme</span><span class="p">]))]</span>
+            <span class="n">index_al</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">nb_quest_theme</span><span class="p">,</span> <span class="n">nb_quest</span><span class="p">)</span>
+            
+            
+            <span class="c1"># Déroulé du quizz</span>
+            <span class="n">count</span><span class="o">=</span><span class="mi">1</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Lancement du Quizz avec </span><span class="si">%s</span><span class="s2"> joueur(s)&quot;</span> <span class="o">%</span> <span class="n">nb_joueurs</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">index_al</span> <span class="p">:</span> <span class="c1"># parcourir la liste de questions</span>
+                <span class="c1"># boucle pour poser la question à tous les joueurs</span>
+                <span class="k">for</span> <span class="n">pseudo</span> <span class="ow">in</span> <span class="n">joueurs</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="p">:</span>
+                    <span class="n">V_F</span><span class="o">=</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Question </span><span class="si">%d</span><span class="s2"> de </span><span class="si">%d</span><span class="s2">: Repondez par Vrai (V) ou Faux (F)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">count</span><span class="p">,</span><span class="n">nb_quest</span><span class="p">)</span> 
+                    <span class="n">votre_rep</span><span class="o">=</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Reponse:&quot;</span>
+                    <span class="n">question</span><span class="o">=</span><span class="n">quest</span><span class="p">[</span><span class="n">theme</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">][:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">envoyer</span><span class="p">(</span><span class="n">pseudo</span><span class="p">,</span><span class="n">V_F</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">envoyer</span><span class="p">(</span><span class="n">pseudo</span><span class="p">,</span><span class="n">question</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">demander</span><span class="p">(</span><span class="n">pseudo</span><span class="p">,</span><span class="n">votre_rep</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Question </span><span class="si">%d</span><span class="s2"> posee&quot;</span> <span class="o">%</span> <span class="n">count</span><span class="p">)</span>
+    
+                <span class="c1"># boucle pour attendre les réponses</span>
+                <span class="n">t</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="n">reponses</span><span class="o">=</span><span class="p">{}</span>
+                <span class="n">debut</span><span class="o">=</span><span class="n">time</span><span class="p">()</span>
+                <span class="k">while</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">reponses</span><span class="p">)</span><span class="o">&lt;</span><span class="n">nb_joueurs</span> <span class="ow">and</span> <span class="n">t</span><span class="o">&lt;</span><span class="bp">self</span><span class="o">.</span><span class="n">TEMPS_MAX</span><span class="p">)</span> <span class="p">:</span> <span class="c1"># temps écoulé ou tous les joueurs répondent</span>
+                    <span class="n">succes</span><span class="p">,</span><span class="n">pseudo</span><span class="p">,</span><span class="n">reponse</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lire_queue</span><span class="p">()</span>
+                    <span class="k">if</span> <span class="n">succes</span> <span class="p">:</span>
+                        <span class="n">reponses</span><span class="p">[</span><span class="n">pseudo</span><span class="p">]</span><span class="o">=</span><span class="n">reponse</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                        <span class="k">if</span> <span class="n">reponses</span><span class="p">[</span><span class="n">pseudo</span><span class="p">]</span><span class="o">!=</span><span class="s2">&quot;quit&quot;</span> <span class="p">:</span>
+                            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> a repondu </span><span class="si">%s</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">pseudo</span><span class="p">,</span><span class="n">reponses</span><span class="p">[</span><span class="n">pseudo</span><span class="p">]))</span>
+                    <span class="k">else</span> <span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Deconnexion inattendue&quot;</span><span class="p">)</span>
+    
+                <span class="n">nouvJoueurs</span><span class="o">=</span><span class="p">{}</span> <span class="c1"># MAJ des joueurs en cas de déconnexion imprévue</span>
+                <span class="k">for</span> <span class="n">pseudo</span> <span class="ow">in</span> <span class="n">joueurs</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="p">:</span>
+                    <span class="k">if</span> <span class="n">pseudo</span> <span class="ow">in</span> <span class="n">reponses</span> <span class="p">:</span>
+                        <span class="n">repJoueur</span> <span class="o">=</span> <span class="n">reponses</span><span class="p">[</span><span class="n">pseudo</span><span class="p">]</span>
+                        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">repJoueur</span><span class="p">)</span><span class="o">&gt;</span><span class="mi">0</span> <span class="p">:</span>
+                            <span class="k">if</span> <span class="n">repJoueur</span> <span class="o">==</span> <span class="s2">&quot;quit&quot;</span> <span class="p">:</span>
+                                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Deconnexion inattendue&quot;</span><span class="p">)</span>
+                                <span class="k">if</span> <span class="n">pseudo</span><span class="o">==</span><span class="n">lanceur</span> <span class="p">:</span>
+                                    <span class="k">del</span> <span class="n">joueurs</span><span class="p">[</span><span class="n">lanceur</span><span class="p">]</span>
+                                    <span class="n">fin</span><span class="o">=</span><span class="kc">True</span>
+                                    <span class="k">break</span>
+                            <span class="k">elif</span> <span class="n">repJoueur</span><span class="o">==</span><span class="s2">&quot;none&quot;</span> <span class="p">:</span>
+                                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> n&#39;a pas repondu a temps&quot;</span> <span class="o">%</span> <span class="n">pseudo</span><span class="p">)</span>
+                                <span class="n">resultat</span><span class="o">=</span><span class="s2">&quot;Temps ecoule :&#39;(&quot;</span>
+                            <span class="k">elif</span> <span class="n">repJoueur</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">capitalize</span><span class="p">()</span> <span class="o">==</span> <span class="n">quest</span><span class="p">[</span><span class="n">theme</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">]:</span>
+                                <span class="n">joueurs</span><span class="p">[</span><span class="n">pseudo</span><span class="p">]</span> <span class="o">+=</span><span class="mi">1</span> <span class="c1"># augmentation du score</span>
+                                <span class="n">resultat</span><span class="o">=</span><span class="s2">&quot;Bravo o/&quot;</span>
+                            <span class="k">else</span><span class="p">:</span>
+                                <span class="n">joueurs</span><span class="p">[</span><span class="n">pseudo</span><span class="p">]</span> <span class="o">-=</span><span class="mf">0.5</span>
+                                <span class="n">resultat</span><span class="o">=</span><span class="s2">&quot;Perdu :/&quot;</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Reponse invalide de </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">pseudo</span><span class="p">)</span>
+                            <span class="n">resultat</span><span class="o">=</span><span class="s2">&quot;Reponse invalide&quot;</span>
+                    <span class="k">if</span> <span class="n">pseudo</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">connexions</span> <span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">envoyer</span><span class="p">(</span><span class="n">pseudo</span><span class="p">,</span><span class="n">resultat</span><span class="p">)</span>
+                        <span class="n">nouvJoueurs</span><span class="p">[</span><span class="n">pseudo</span><span class="p">]</span><span class="o">=</span><span class="n">joueurs</span><span class="p">[</span><span class="n">pseudo</span><span class="p">]</span>
+                    <span class="k">else</span> <span class="p">:</span>
+                        <span class="n">nb_joueurs</span><span class="o">-=</span><span class="mi">1</span>
+    
+                <span class="c1"># MAJ du nombre de joueur au cas où tous les joueurs soient deconnectes</span>
+                <span class="k">if</span> <span class="n">nb_joueurs</span><span class="o">==</span><span class="mi">0</span> <span class="p">:</span>
+                    <span class="n">msg</span><span class="o">=</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Plus de joueurs en jeu ! &quot;</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">fin_partie</span><span class="p">(</span><span class="n">joueurs</span><span class="p">,</span><span class="n">msg</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Fin de la partie ...</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="k">return</span> 
+                <span class="k">else</span> <span class="p">:</span>
+                    <span class="n">joueurs</span><span class="o">=</span><span class="n">nouvJoueurs</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+                    <span class="n">count</span><span class="o">+=</span><span class="mi">1</span>
+    
+            <span class="c1"># Creation du classement</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Classement des joueurs&quot;</span><span class="p">)</span>
+            <span class="n">classment</span> <span class="o">=</span> <span class="n">joueurs</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+    
+            <span class="n">classement_trie</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">classment</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">classement_trie</span><span class="o">.</span><span class="n">reverse</span><span class="p">()</span>
+            <span class="n">pod</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">classement_trie</span><span class="p">)):</span>
+                <span class="n">pod</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%d</span><span class="s2"> : </span><span class="si">%s</span><span class="s2"> avec </span><span class="si">%.1f</span><span class="s2"> point(s)&quot;</span> <span class="o">%</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">classement_trie</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">classement_trie</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">]))</span>
+    
+            <span class="c1"># Affichage des scores et du classement final</span>
+            <span class="k">for</span> <span class="n">pseudo</span> <span class="ow">in</span> <span class="n">joueurs</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">joueurs</span><span class="p">[</span><span class="n">pseudo</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">score_tot</span> <span class="o">=</span> <span class="s2">&quot;Bah alors on a pas reussi a marquer un seul point??&quot;</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">score_tot</span><span class="o">=</span><span class="s2">&quot;Bien joue ! Vous avez </span><span class="si">{0}</span><span class="s2"> point(s).&quot;</span> <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">joueurs</span><span class="p">[</span><span class="n">pseudo</span><span class="p">])</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">envoyer</span><span class="p">(</span><span class="n">pseudo</span><span class="p">,</span><span class="n">score_tot</span><span class="p">)</span>
+    
+                <span class="n">podium</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Classement de la partie :&quot;</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">envoyer</span><span class="p">(</span><span class="n">pseudo</span><span class="p">,</span><span class="n">podium</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">pod</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">envoyer</span><span class="p">(</span><span class="n">pseudo</span><span class="p">,</span><span class="n">i</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">:</span> 
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;erreur dans la partie :/&quot;</span><span class="p">)</span>
+            <span class="k">pass</span>
+        <span class="k">finally</span> <span class="p">:</span>
+            <span class="c1"># Fin de la partie</span>
+            <span class="n">msg</span><span class="o">=</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Merci d&#39;avoir joue ! :)&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fin_partie</span><span class="p">(</span><span class="n">joueurs</span><span class="p">,</span><span class="n">msg</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Fin de la partie ...</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Serveur.retirer"><a class="viewcode-back" href="../_autosummary/Serveur.html#Serveur.Serveur.retirer">[docs]</a>    <span class="k">def</span> <span class="nf">retirer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">joueurs</span><span class="p">,</span><span class="n">pseudo</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Retire un joueur du dictionnaire en cas de déconnexion</span>
+
+<span class="sd">        :param dict joueurs: dictionnaire pseudo:score stockant les joueurs connectés</span>
+<span class="sd">        :param str pseudo: pseudo du joueur à retirer</span>
+
+<span class="sd">        :returns: True si tout s&#39;est bien exécuté</span>
+<span class="sd">        :rtype: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span> <span class="p">:</span>
+            <span class="n">res</span><span class="o">=</span><span class="kc">True</span>
+            <span class="k">del</span> <span class="n">joueurs</span><span class="p">[</span><span class="n">pseudo</span><span class="p">]</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> ne fait plus partie des joueurs&quot;</span> <span class="o">%</span> <span class="n">pseudo</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">:</span>
+            <span class="n">res</span><span class="o">=</span><span class="kc">False</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> a deja ete retire&quot;</span> <span class="o">%</span> <span class="n">pseudo</span><span class="p">)</span>
+            <span class="k">pass</span>
+        <span class="k">return</span> <span class="n">res</span></div>
+
+<div class="viewcode-block" id="Serveur.envoyer"><a class="viewcode-back" href="../_autosummary/Serveur.html#Serveur.Serveur.envoyer">[docs]</a>    <span class="k">def</span> <span class="nf">envoyer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">pseudo</span><span class="p">,</span><span class="n">msg</span><span class="p">):</span> <span class="c1"># envoi d&#39;un message à afficher au client</span>
+        <span class="sd">&quot;&quot;&quot;Envoie un message à un joueur, pas de réponse attendue</span>
+
+<span class="sd">        :param str pseudo: pseudo du joueur avec lequel le serveur doit communiquer</span>
+<span class="sd">        :param str msg: message à envoyer</span>
+
+<span class="sd">        :returns: True si tout s&#39;est bien exécuté</span>
+<span class="sd">        :rtype: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">res</span><span class="o">=</span><span class="kc">False</span>
+        <span class="k">try</span> <span class="p">:</span>
+            <span class="n">msg</span><span class="o">=</span><span class="n">msg</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;ascii&#39;</span><span class="p">)</span>
+            <span class="n">sock</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">connexions</span><span class="p">[</span><span class="n">pseudo</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">sock</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+            <span class="n">res</span><span class="o">=</span><span class="kc">True</span>
+        <span class="k">except</span> <span class="p">:</span>
+            <span class="n">res</span><span class="o">=</span><span class="kc">False</span>
+            <span class="k">pass</span>
+        <span class="k">return</span> <span class="n">res</span></div>
+
+<div class="viewcode-block" id="Serveur.demander"><a class="viewcode-back" href="../_autosummary/Serveur.html#Serveur.Serveur.demander">[docs]</a>    <span class="k">def</span> <span class="nf">demander</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">pseudo</span><span class="p">,</span><span class="n">msg</span><span class="p">):</span> <span class="c1"># envoi d&#39;un message attendant une réponse</span>
+        <span class="sd">&quot;&quot;&quot;Envoie un message à un joueur en précisant qu&#39;une réponse est attendue</span>
+
+<span class="sd">        :param str pseudo: pseudo du joueur avec lequel le serveur doit communiquer</span>
+<span class="sd">        :param str msg: message à envoyer</span>
+
+<span class="sd">        :returns: True si tout s&#39;est bien exécuté</span>
+<span class="sd">        :rtype: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">res</span><span class="o">=</span><span class="kc">False</span>
+        <span class="k">try</span> <span class="p">:</span>
+            <span class="n">msg</span><span class="o">+=</span><span class="s1">&#39;1&#39;</span>
+            <span class="n">msg</span><span class="o">=</span><span class="n">msg</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;ascii&#39;</span><span class="p">)</span>
+            <span class="n">sock</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">connexions</span><span class="p">[</span><span class="n">pseudo</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">sock</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+            <span class="n">res</span><span class="o">=</span><span class="kc">True</span>
+        <span class="k">except</span> <span class="p">:</span>
+            <span class="n">res</span><span class="o">=</span><span class="kc">False</span>
+            <span class="k">pass</span>
+        <span class="k">return</span> <span class="n">res</span></div>
+
+<div class="viewcode-block" id="Serveur.lire_queue"><a class="viewcode-back" href="../_autosummary/Serveur.html#Serveur.Serveur.lire_queue">[docs]</a>    <span class="k">def</span> <span class="nf">lire_queue</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Lecture des données présentes dans la queue data.</span>
+
+<span class="sd">        :returns: True si la queue a bien été lue, le pseudo du joueur ayant envoyé un message et le message reçu</span>
+<span class="sd">        :rtype: bool,str,str</span>
+<span class="sd">        </span>
+<span class="sd">        :Example:</span>
+
+<span class="sd">        &gt;&gt;&gt; serveur = Serveur()</span>
+<span class="sd">        &gt;&gt;&gt; serveur.lire_queue()</span>
+<span class="sd">        [True,&#39;elise&#39;,&#39;Hello&#39;]</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">succes</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">pseudo</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">()</span> <span class="c1"># pseudo</span>
+            <span class="n">reponse</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">()</span> <span class="c1"># message</span>
+            <span class="n">succes</span><span class="o">=</span><span class="kc">True</span>
+        <span class="k">except</span> <span class="p">:</span>
+            <span class="n">succes</span><span class="o">=</span><span class="kc">False</span>
+            <span class="k">pass</span>
+        <span class="k">return</span> <span class="n">succes</span><span class="p">,</span><span class="n">pseudo</span><span class="p">,</span><span class="n">reponse</span></div>
+
+<div class="viewcode-block" id="Serveur.fin_partie"><a class="viewcode-back" href="../_autosummary/Serveur.html#Serveur.Serveur.fin_partie">[docs]</a>    <span class="k">def</span> <span class="nf">fin_partie</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">joueurs</span><span class="p">,</span><span class="n">msg</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Fonction terminant proprement la partie : parcourt le dictionnaire des joueurs et envoie à chacun un message de cloture, puis demande s&#39;ils veulent rejouer.</span>
+
+<span class="sd">        :param dict joueurs: dictionnaire pseudo:score stockant les joueurs connectés</span>
+<span class="sd">        :param str msg: message à envoyer aux joueurs</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">rejouer</span><span class="o">=</span><span class="s2">&quot;Que voulez vous faire ?</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="n">fin</span><span class="o">=</span><span class="s2">&quot;Fin Partie&quot;</span>
+        <span class="k">for</span> <span class="n">pseudo</span> <span class="ow">in</span> <span class="n">joueurs</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">envoyer</span><span class="p">(</span><span class="n">pseudo</span><span class="p">,</span><span class="n">msg</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">envoyer</span><span class="p">(</span><span class="n">pseudo</span><span class="p">,</span><span class="n">fin</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">demander</span><span class="p">(</span><span class="n">pseudo</span><span class="p">,</span><span class="n">rejouer</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">partie_en_cours</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">partie_en_cours</span><span class="o">.</span><span class="n">value</span><span class="o">=</span><span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">partie_en_cours</span><span class="o">.</span><span class="n">release</span><span class="p">()</span></div></div>
+    
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+<span class="c1">#        Serveur()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">Serveur</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">KeyboardInterrupt</span> <span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Fermeture du serveur&quot;</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Exception inattendue&quot;</span><span class="p">)</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">process</span> <span class="ow">in</span> <span class="n">mp</span><span class="o">.</span><span class="n">active_children</span><span class="p">():</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Fermeture du processus &quot;</span><span class="p">,</span> <span class="n">process</span><span class="p">)</span>
+                <span class="n">process</span><span class="o">.</span><span class="n">terminate</span><span class="p">()</span>
+                <span class="n">process</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;FIN&quot;</span><span class="p">)</span>
+</pre></div>
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, E. Jacquemet, A. Genestier, C. Mendoza, M. Codet.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" src="../_static/translations.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

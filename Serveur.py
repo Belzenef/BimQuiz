@@ -149,7 +149,7 @@ class Serveur:
         :ivar tab: liste des questions obtenue par la lecture du fichier .csv
 
         :raises: Deconnexion inattendue
-    """
+        """
         # Récupération des joueurs connectés
         # connexions.put("Done")
         try :
@@ -414,6 +414,13 @@ class Serveur:
 
         :returns: True si la queue a bien été lue, le pseudo du joueur ayant envoyé un message et le message reçu
         :rtype: bool,str,str
+        
+        :Example:
+
+        >>> serveur = Serveur()
+        >>> serveur.lire_queue()
+        [True,'elise','Hello']
+
         """
         succes = False
         try:

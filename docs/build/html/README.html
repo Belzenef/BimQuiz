@@ -1,0 +1,252 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Manuel d’utilisation &mdash; documentation BIM QUIZZ 0</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Recherche" href="search.html"/>
+    <link rel="top" title="documentation BIM QUIZZ 0" href="index.html"/>
+        <link rel="prev" title="Client" href="_autosummary/Client.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> BIM QUIZZ
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">Modules :</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Manuel d’utilisation</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">BIM QUIZZ</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Manuel d’utilisation</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/README.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="manuel-d-utilisation">
+<h1>Manuel d’utilisation<a class="headerlink" href="#manuel-d-utilisation" title="Lien permanent vers ce titre">¶</a></h1>
+<p>Elaboration d’un Quizz en réseau dans le cadre du cours «&nbsp;Programmation réseau&nbsp;» de 4BIM.</p>
+<p>Language utilisé: python3</p>
+<p>Le but de ce projet est de créer un quizz en réseau. Il faut premièrement lancer le fichier Serveur.py (python3 Serveur.py) puis plusieurs clients avec le fichier Client.py. En se connectant, chaque participant choisit son pseudo. Il est également possible de choisir son pseudo directement en lançant le fichier Client.py (Exemple: python3 Client.py pseudo). Dans ce cas le pseudo ne sera pas demandé. Enfin, pour une utilisation en réseau avec plusieurs machines, il faut fournir le pseudo ainsi que l’adresse IP de la machine sur laquelle le serveur a été lancé (Exemple: python3 Client.py pseudo 134.214.XXX.XXX)</p>
+<p>Il est possible de jouer en réseau sur n’importe quel ordinateur de l’INSA. Il faudra alors préciser l’adresse IP de l’ordinateur qui lance le serveur (Exemple: python3 Client.py pseudo 134.214.159.199). Pour obtenir l’adresse IP il est possible de rentrer la commande suivante dans un terminal : «&nbsp;curl ifconfig.me&nbsp;». Si on ne précise pas d’adresse IP, le quiz se lancera en local.</p>
+<p>Une fois connectés, les joueurs doivent choisir entre:</p>
+<blockquote>
+<div>Attendre que d’autres joueurs se connectent («&nbsp;wait&nbsp;»)
+Lancer une partie («&nbsp;start&nbsp;»)
+Quitter le jeu («&nbsp;quit&nbsp;») Si la saisie du client est invalide ou s’il ne répond pas au bout de 30 secondes, cela aura le même effet que «&nbsp;wait&nbsp;».</div></blockquote>
+<p>Lorsqu’un joueur lance une partie, tout les joueurs en «&nbsp;attente&nbsp;» vont alors jouer. En lançant une partie, le joueur devra sélectionner un thème parmis 3 et choisir le nombre de questions souhaitées. Les joueurs répondront simultanément aux questions par vrai(V) ou faux(F). Si un joueur met plus de 30 secondes à répondre il passe directement à la question suivante. A la fin de la partie, les joueurs obtiennent le nombre de points gagnés ainsi que le classement de la partie. Les points sont comptés de la façon suivante:</p>
+<blockquote>
+<div>+1 si le joueur répond correctement à la question
+-0.5 si le joueur donne une mauvaise réponse
+0 s’il ne répond pas</div></blockquote>
+<p>A l’issu du classement les clients reviennent au choix initial et peuvent choisir d’attendre, de lancer une partie ou de quitter.</p>
+<p>Amusez vous bien!</p>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="_autosummary/Client.html" class="btn btn-neutral" title="Client" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, E. Jacquemet, A. Genestier, C. Mendoza, M. Codet.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="_static/translations.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
