@@ -1,6 +1,8 @@
-#Elaboration d'un Quizz en réseau
+Elaboration d'un Quizz en réseau
 Marie Codet, Alice Genestier, Elise Jacquemet, Cloé Mendoza
 Projet réalisé dans le cadre du cours "Programmation réseau" de 4BIM.
+
+Lien vers la [documentation](https://readthedocs.org/projects/quizz/)
 
 Language utilisé: python3
 
