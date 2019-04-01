@@ -1,6 +1,5 @@
-Elaboration d'un Quizz en réseau
-Marie Codet, Alice Genestier, Elise Jacquemet, Cloé Mendoza
-Projet réalisé dans le cadre du cours "Programmation réseau" de 4BIM.
+# BIMQUIZ
+## Elaboration d'un Quizz en réseau
 
 Lien vers la [documentation](https://readthedocs.org/projects/quizz/)
 
@@ -24,3 +23,5 @@ Lorsqu'un joueur lance une partie, tout les joueurs en "attente" vont alors joue
 A l'issu du classement les clients reviennent au choix initial et peuvent choisir d'attendre, de lancer une partie ou de quitter.
 
 Amusez vous bien!
+
+Projet réalisé dans le cadre du cours "Programmation réseau" de 4BIM.
