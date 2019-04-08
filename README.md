@@ -44,7 +44,7 @@ Une interface graphique pourrait également être développée, car pour le mome
 
 * __Je n'arrive pas a me connecter au serveur__ :
 Vérifiez que le serveur a bien été lancé AVANT de lancer un script Client. Si vous  souhaitez jouer en réseau, vérifiez que vous avez saisi correctement l'addresse IP d'où a été lancé le serveur. (Exemple: python3 Client.py pseudo 134.214.159.199). 
-********************
+-----------------
 * __J'ai lancé une partie mais mes amis ne peuvent pas la rejoindre__ :
 Attention ! il faut bien attendre que tout le monde soit connecté au serveur et ait saisi "wait" AVANT de lancer la partie.
 -----------------
