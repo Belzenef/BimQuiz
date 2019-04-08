@@ -55,8 +55,9 @@ Pour d'autres questions, n'hésitez pas à contacter nous contacter : elise.jacq
 
 ## Pour aller plus loin ...
 
-Language utilisé: python3
 Lien vers la [documentation](https://readthedocs.org/projects/quizz/)
+
+Language utilisé: python3
 
 Projet réalisé dans le cadre du cours "Programmation réseau" de 4BIM.
 
