@@ -1,0 +1,6 @@
+README.txt
+setup.py
+Bimquizz.egg-info/PKG-INFO
+Bimquizz.egg-info/SOURCES.txt
+Bimquizz.egg-info/dependency_links.txt
+Bimquizz.egg-info/top_level.txt

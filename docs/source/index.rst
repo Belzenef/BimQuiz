@@ -23,13 +23,17 @@ Compte-rendu
 
 :download:`download bimquiz.pdf <bimquiz.pdf>`
 
-Manuel d'utilisation
+Informations
 --------------------
 
 .. toctree::
-	:maxdepth: 2
+	:maxdepth: 1
    
-	README
+	Presentation
+	Instructions
+	Ameliorations
+	FAQ
+	
 
 
 Index

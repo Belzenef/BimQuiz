@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -9,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Index &mdash; documentation BIM QUIZZ 0</title>
+  <title>Elaboration d’un Quizz en réseau &mdash; documentation BIM QUIZZ 0</title>
   
 
   
@@ -34,9 +33,11 @@
 
   
         <link rel="index" title="Index"
-              href="#"/>
+              href="genindex.html"/>
         <link rel="search" title="Recherche" href="search.html"/>
-    <link rel="top" title="documentation BIM QUIZZ 0" href="index.html"/> 
+    <link rel="top" title="documentation BIM QUIZZ 0" href="index.html"/>
+        <link rel="next" title="Instructions de lancement" href="Instructions.html"/>
+        <link rel="prev" title="Client" href="_autosummary/Client.html"/> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -92,8 +93,8 @@
               <ul>
 <li class="toctree-l1"><a class="reference internal" href="modules.html">Modules :</a></li>
 </ul>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="Presentation.html">Elaboration d’un Quizz en réseau</a></li>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Elaboration d’un Quizz en réseau</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Instructions.html">Instructions de lancement</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Ameliorations.html">Améliorations possibles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="FAQ.html">Foire aux questions</a></li>
@@ -141,12 +142,14 @@
     
       <li><a href="index.html">Docs</a> &raquo;</li>
         
-      <li>Index</li>
+      <li>Elaboration d’un Quizz en réseau</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
             
+            <a href="_sources/Presentation.rst.txt" rel="nofollow"> View page source</a>
+          
         
       </li>
     
@@ -158,109 +161,36 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-
-<h1 id="index">Index</h1>
-
-<div class="genindex-jumpbox">
- <a href="#C"><strong>C</strong></a>
- | <a href="#D"><strong>D</strong></a>
- | <a href="#E"><strong>E</strong></a>
- | <a href="#F"><strong>F</strong></a>
- | <a href="#H"><strong>H</strong></a>
- | <a href="#L"><strong>L</strong></a>
- | <a href="#P"><strong>P</strong></a>
- | <a href="#R"><strong>R</strong></a>
- | <a href="#S"><strong>S</strong></a>
- 
+  <div class="section" id="elaboration-d-un-quizz-en-reseau">
+<h1>Elaboration d’un Quizz en réseau<a class="headerlink" href="#elaboration-d-un-quizz-en-reseau" title="Lien permanent vers ce titre">¶</a></h1>
+<p>Le but de ce projet est de créer un quizz en réseau entre plusieurs participants. Des centaines de questions amusantes, sur des thèmes variés tels que lec chats, la musique ou les mots &amp; expressions !</p>
+<p>Une fois le serveur TCP lancé, autant de joueurs que souhaité peuvent se connecter.
+Mais si vous voulez utiliser ce quiz en solo, c’est également possible !</p>
+<dl class="docutils">
+<dt>Une fois connectés, les joueurs doivent choisir entre:</dt>
+<dd><ul class="first last simple">
+<li>Attendre que d’autres joueurs se connectent («&nbsp;wait&nbsp;»)</li>
+<li>Lancer une partie («&nbsp;start&nbsp;»)</li>
+<li>Quitter le jeu («&nbsp;quit&nbsp;»)</li>
+</ul>
+</dd>
+</dl>
+<p>Si la saisie du client est invalide ou s’il ne répond pas au bout de 30 secondes, cela aura le même effet que «&nbsp;wait&nbsp;».</p>
+<p>Lorsqu’un joueur lance une partie, tout les joueurs en attente vont alors se joindre à lui pour répondre aux questions. En lançant une partie, le joueur devra d’abord sélectionner un thème parmis 3 proposés aléatoirement et choisir le nombre de questions souhaitées.</p>
+<p>Les joueurs répondront simultanément aux questions par vrai ou faux. Mais attention, le temps est limité ! Si un joueur met plus de 30 secondes à répondre il passe directement à la question suivante et ne gagne aucun point :”(</p>
+<p>A la fin de la partie, les joueurs obtiennent le nombre de points gagnés ainsi que le classement de la partie.</p>
+<dl class="docutils">
+<dt>Les points sont comptés de la façon suivante:</dt>
+<dd><ul class="first last simple">
+<li>+1 si le joueur répond correctement à la question</li>
+<li>-0.5 si le joueur donne une mauvaise réponse</li>
+<li>0 s’il ne répond pas</li>
+</ul>
+</dd>
+</dl>
+<p>A l’issue du classement, les utilisateurs reviennent au choix initial et peuvent alors attendre, lancer une partie ou quitter le serveur.</p>
+<p>Amusez vous bien !</p>
 </div>
-<h2 id="C">C</h2>
-<table style="width: 100%" class="indextable genindextable"><tr>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="_autosummary/Client.html#Client.Client">Client (classe dans Client)</a>
-
-      <ul>
-        <li><a href="_autosummary/Client.html#module-Client">(module)</a>
-</li>
-      </ul></li>
-  </ul></td>
-</tr></table>
-
-<h2 id="D">D</h2>
-<table style="width: 100%" class="indextable genindextable"><tr>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="_autosummary/Serveur.html#Serveur.Serveur.demander">demander() (méthode Serveur.Serveur)</a>
-</li>
-  </ul></td>
-</tr></table>
-
-<h2 id="E">E</h2>
-<table style="width: 100%" class="indextable genindextable"><tr>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="_autosummary/Serveur.html#Serveur.Serveur.envoyer">envoyer() (méthode Serveur.Serveur)</a>
-</li>
-  </ul></td>
-</tr></table>
-
-<h2 id="F">F</h2>
-<table style="width: 100%" class="indextable genindextable"><tr>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="_autosummary/Serveur.html#Serveur.Serveur.fin_partie">fin_partie() (méthode Serveur.Serveur)</a>
-</li>
-  </ul></td>
-</tr></table>
-
-<h2 id="H">H</h2>
-<table style="width: 100%" class="indextable genindextable"><tr>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="_autosummary/Serveur.html#Serveur.Serveur.handle_conn">handle_conn() (méthode Serveur.Serveur)</a>
-</li>
-  </ul></td>
-</tr></table>
-
-<h2 id="L">L</h2>
-<table style="width: 100%" class="indextable genindextable"><tr>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="_autosummary/Client.html#Client.Client.lire">lire() (méthode Client.Client)</a>
-</li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="_autosummary/Serveur.html#Serveur.Serveur.lire_queue">lire_queue() (méthode Serveur.Serveur)</a>
-</li>
-  </ul></td>
-</tr></table>
-
-<h2 id="P">P</h2>
-<table style="width: 100%" class="indextable genindextable"><tr>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="_autosummary/Serveur.html#Serveur.Serveur.partie">partie() (méthode Serveur.Serveur)</a>
-</li>
-  </ul></td>
-</tr></table>
-
-<h2 id="R">R</h2>
-<table style="width: 100%" class="indextable genindextable"><tr>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="_autosummary/Serveur.html#Serveur.Serveur.retirer">retirer() (méthode Serveur.Serveur)</a>
-</li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="_autosummary/Serveur.html#Serveur.Serveur.run">run() (méthode Serveur.Serveur)</a>
-</li>
-  </ul></td>
-</tr></table>
-
-<h2 id="S">S</h2>
-<table style="width: 100%" class="indextable genindextable"><tr>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="_autosummary/Serveur.html#Serveur.Serveur">Serveur (classe dans Serveur)</a>
-
-      <ul>
-        <li><a href="_autosummary/Serveur.html#module-Serveur">(module)</a>
-</li>
-      </ul></li>
-  </ul></td>
-</tr></table>
-
 
 
            </div>
@@ -269,6 +199,15 @@
            </div>
           </div>
           <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="Instructions.html" class="btn btn-neutral float-right" title="Instructions de lancement" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="_autosummary/Client.html" class="btn btn-neutral" title="Client" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
   
 
   <hr/>

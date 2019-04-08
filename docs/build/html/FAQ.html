@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Manuel d’utilisation &mdash; documentation BIM QUIZZ 0</title>
+  <title>Foire aux questions &mdash; documentation BIM QUIZZ 0</title>
   
 
   
@@ -36,7 +36,7 @@
               href="genindex.html"/>
         <link rel="search" title="Recherche" href="search.html"/>
     <link rel="top" title="documentation BIM QUIZZ 0" href="index.html"/>
-        <link rel="prev" title="Client" href="_autosummary/Client.html"/> 
+        <link rel="prev" title="Améliorations possibles" href="Ameliorations.html"/> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -93,7 +93,10 @@
 <li class="toctree-l1"><a class="reference internal" href="modules.html">Modules :</a></li>
 </ul>
 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Manuel d’utilisation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Presentation.html">Elaboration d’un Quizz en réseau</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Instructions.html">Instructions de lancement</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Ameliorations.html">Améliorations possibles</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Foire aux questions</a></li>
 </ul>
 
             
@@ -138,13 +141,13 @@
     
       <li><a href="index.html">Docs</a> &raquo;</li>
         
-      <li>Manuel d’utilisation</li>
+      <li>Foire aux questions</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="_sources/README.rst.txt" rel="nofollow"> View page source</a>
+            <a href="_sources/FAQ.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -157,24 +160,14 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="manuel-d-utilisation">
-<h1>Manuel d’utilisation<a class="headerlink" href="#manuel-d-utilisation" title="Lien permanent vers ce titre">¶</a></h1>
-<p>Elaboration d’un Quizz en réseau dans le cadre du cours «&nbsp;Programmation réseau&nbsp;» de 4BIM.</p>
-<p>Language utilisé: python3</p>
-<p>Le but de ce projet est de créer un quizz en réseau. Il faut premièrement lancer le fichier Serveur.py (python3 Serveur.py) puis plusieurs clients avec le fichier Client.py. En se connectant, chaque participant choisit son pseudo. Il est également possible de choisir son pseudo directement en lançant le fichier Client.py (Exemple: python3 Client.py pseudo). Dans ce cas le pseudo ne sera pas demandé. Enfin, pour une utilisation en réseau avec plusieurs machines, il faut fournir le pseudo ainsi que l’adresse IP de la machine sur laquelle le serveur a été lancé (Exemple: python3 Client.py pseudo 134.214.XXX.XXX)</p>
-<p>Il est possible de jouer en réseau sur n’importe quel ordinateur de l’INSA. Il faudra alors préciser l’adresse IP de l’ordinateur qui lance le serveur (Exemple: python3 Client.py pseudo 134.214.159.199). Pour obtenir l’adresse IP il est possible de rentrer la commande suivante dans un terminal : «&nbsp;curl ifconfig.me&nbsp;». Si on ne précise pas d’adresse IP, le quiz se lancera en local.</p>
-<p>Une fois connectés, les joueurs doivent choisir entre:</p>
-<blockquote>
-<div>Attendre que d’autres joueurs se connectent («&nbsp;wait&nbsp;»)
-Lancer une partie («&nbsp;start&nbsp;»)
-Quitter le jeu («&nbsp;quit&nbsp;») Si la saisie du client est invalide ou s’il ne répond pas au bout de 30 secondes, cela aura le même effet que «&nbsp;wait&nbsp;».</div></blockquote>
-<p>Lorsqu’un joueur lance une partie, tout les joueurs en «&nbsp;attente&nbsp;» vont alors jouer. En lançant une partie, le joueur devra sélectionner un thème parmis 3 et choisir le nombre de questions souhaitées. Les joueurs répondront simultanément aux questions par vrai(V) ou faux(F). Si un joueur met plus de 30 secondes à répondre il passe directement à la question suivante. A la fin de la partie, les joueurs obtiennent le nombre de points gagnés ainsi que le classement de la partie. Les points sont comptés de la façon suivante:</p>
-<blockquote>
-<div>+1 si le joueur répond correctement à la question
--0.5 si le joueur donne une mauvaise réponse
-0 s’il ne répond pas</div></blockquote>
-<p>A l’issu du classement les clients reviennent au choix initial et peuvent choisir d’attendre, de lancer une partie ou de quitter.</p>
-<p>Amusez vous bien!</p>
+  <div class="section" id="foire-aux-questions">
+<h1>Foire aux questions<a class="headerlink" href="#foire-aux-questions" title="Lien permanent vers ce titre">¶</a></h1>
+<ul class="simple">
+<li><strong>Je n’arrive pas a me connecter au serveur</strong> : Vérifiez que le serveur a bien été lancé AVANT de lancer un script Client. Si vous  souhaitez jouer en réseau, vérifiez que vous avez saisi correctement l’addresse IP d’où a été lancé le serveur. (Exemple: python3 Client.py pseudo 134.214.159.199).</li>
+<li><strong>J’ai lancé une partie mais mes amis ne peuvent pas la rejoindre</strong> : Attention ! il faut bien attendre que tout le monde soit connecté au serveur et ait saisi «&nbsp;wait&nbsp;» AVANT de lancer la partie.</li>
+<li><strong>Le serveur ne compte pas mes points correctement</strong> : Vérifiez que vous entrez bien «&nbsp;v&nbsp;» ou «&nbsp;f&nbsp;» (majuscules ou non, comme vous voulez !) pour répondre et non autre chose</li>
+</ul>
+<p>Pour d’autres questions, n’hésitez pas à contacter nous contacter : <a class="reference external" href="mailto:elise&#46;jacquemet&#37;&#52;&#48;insa-lyon&#46;fr">elise<span>&#46;</span>jacquemet<span>&#64;</span>insa-lyon<span>&#46;</span>fr</a></p>
 </div>
 
 
@@ -188,7 +181,7 @@ Quitter le jeu («&nbsp;quit&nbsp;») Si la saisie du client est invalide ou s�
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
       
-        <a href="_autosummary/Client.html" class="btn btn-neutral" title="Client" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="Ameliorations.html" class="btn btn-neutral" title="Améliorations possibles" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
