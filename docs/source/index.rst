@@ -33,6 +33,7 @@ Informations
 	Instructions
 	Ameliorations
 	FAQ
+	LICENSE
 	
 
 

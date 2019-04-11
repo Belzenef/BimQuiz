@@ -3,7 +3,7 @@
 
 import setuptools
 
-with open("README.txt", "r") as fh:
+with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
@@ -13,7 +13,7 @@ setuptools.setup(
     author_email="elise.jacquemet@hotmail.fr",
     description="Quiz en réseau",
     long_description=long_description,
-    long_description_content_type="text",
+    long_description_content_type="md",
     url="https://github.com/Belzenef/Quizz",
     packages=setuptools.find_packages(),
     classifiers=[
