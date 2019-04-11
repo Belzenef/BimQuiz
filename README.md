@@ -29,6 +29,11 @@ A l'issue du classement, les utilisateurs reviennent au choix initial et peuvent
 
 Amusez vous bien !
 
+## Installation
+
+Vous pouvez cloner le repository disponible sur Github [ici](https://github.com/Belzenef/Quizz/);
+Ou bien utiliser le projet PyPI déposé  [ici](https://test.pypi.org/project/Bimquizz/)
+
 ## Instructions
 
 Il faut premièrement lancer le fichier Serveur.py (python3 Serveur.py) puis un ou plusieurs clients avec le fichier Client.py. 
