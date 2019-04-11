@@ -1,8 +1,8 @@
 # BIMQUIZ
 
-## Elaboration d'un Quizz en réseau
+## Elaboration d'un Quiz en réseau
 
-Le but de ce projet est de créer un quizz en réseau entre plusieurs participants. Des centaines de questions amusantes, sur des thèmes variés tels que lec chats, la musique ou les mots & expressions !
+Le but de ce projet est de créer un quiz en réseau entre plusieurs participants. Des centaines de questions amusantes, sur des thèmes variés tels que lec chats, la musique ou les mots & expressions !
  
 Une fois le serveur TCP lancé, autant de joueurs que souhaité peuvent se connecter. 
 Mais si vous voulez utiliser ce quiz en solo, c'est également possible !
