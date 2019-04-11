@@ -8,3 +8,9 @@ Il est possible de jouer en réseau sur n'importe quel ordinateur de l'INSA. Il 
 
 Pour obtenir l'adresse IP vous pouvez rentrer la commande suivante dans un terminal : "curl ifconfig.me". Si on ne précise pas d'adresse IP, le quiz se lancera en local.
 
+Installation
+=========================
+
+Vous pouvez cloner le repository disponible sur Github [ici](https://github.com/Belzenef/Quizz/);
+Ou bien utiliser le projet PyPI déposé  [ici](https://test.pypi.org/project/Bimquizz/)
+
