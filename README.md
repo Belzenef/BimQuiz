@@ -67,7 +67,7 @@ Pour d'autres questions, n'hésitez pas à contacter nous contacter : elise.jacq
 
 ## Pour aller plus loin ...
 
-Lien vers la [documentation](https://readthedocs.org/projects/quizz/)
+Lien vers la [documentation](https://quizz.readthedocs.io/en/latest/index.html)
 
 Language utilisé: python3
 
