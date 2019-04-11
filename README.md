@@ -1,4 +1,4 @@
-# BIMQUIZZ
+# BIMQUIZ
 
 ## Elaboration d'un Quiz en réseau
 
