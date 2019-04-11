@@ -31,7 +31,8 @@ Amusez vous bien !
 
 ## Installation
 
-Vous pouvez cloner le repository disponible sur Github [ici](https://github.com/Belzenef/Quizz/);
+Vous pouvez cloner le repository disponible sur Github [ici](https://github.com/Belzenef/Quizz/)
+
 Ou bien utiliser le projet PyPI déposé  [ici](https://test.pypi.org/project/Bimquizz/)
 
 ## Instructions
